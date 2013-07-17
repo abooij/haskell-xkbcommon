@@ -4,7 +4,7 @@ module Text.XkbCommon
 	( Context(..), ContextFlags, defaultFlags, newContext,
 	  appendIncludePath, numIncludePaths, 
 	  
-	  Keymap(..), RMLVO, newKeymapFromNames,
+	  Keymap(..), RMLVO, newKeymapFromNames, newKeymapFromString, keymapAsString,
 
 	  KeymapState(..), newKeymapState, updateKeymapState, getOneKeySym,
 	) where
@@ -144,6 +144,19 @@ newKeymapFromNames ctx rmlvo = withForeignPtr (fromContext ctx) $ \ptr -> do
 	l <- newForeignPtr c_unref_keymap k
 	return $ toKeymap l
 
+-- create keymap from string buffer instead of loading from disk
+newKeymapFromString :: Context -> String -> IO Keymap
+newKeymapFromString ctx buf = withForeignPtr (fromContext ctx) $ \ptr -> withCString  buf $ \cstr -> do
+	k <- c_keymap_from_string ptr cstr 1 0
+	l <- newForeignPtr c_unref_keymap k
+	return $ toKeymap l
+
+-- convert a keymap to an enormous string buffer
+keymapAsString :: Keymap -> IO String
+keymapAsString km = withForeignPtr (fromKeymap km) $ \ptr ->
+	c_keymap_as_string ptr (-1) >>= peekCString
+
+
 -- create keymap state from keymap
 newKeymapState :: Keymap -> IO KeymapState
 newKeymapState km =
@@ -210,6 +223,15 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_num_include_paths
 -- note that we always pass 0 as the third argument since there are no options yet.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_keymap_new_from_names"
 	c_keymap_from_names :: Ptr CContext -> Ptr RMLVO -> CInt -> IO (Ptr CKeymap)
+
+-- note that the third argument is always 1 because there are no options yet.
+-- fourth is always 0
+foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_keymap_new_from_string"
+	c_keymap_from_string :: Ptr CContext -> CString -> CInt -> CInt -> IO (Ptr CKeymap)
+
+-- second argument 0 for V1, -1 for original (ie. V1).
+foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_keymap_get_as_string"
+	c_keymap_as_string :: Ptr CKeymap -> CInt -> IO CString
 
 foreign import ccall unsafe "xkbcommon/xkbcommon.h &xkb_keymap_unref"
 	c_unref_keymap :: FinalizerPtr CKeymap
