@@ -1,0 +1,3 @@
+Note that currently, haskell-xkbcommon is a very thin layer of libxkbcommon.
+
+I need to read McAllister "High-level FFI in Haskell" and apply those ideas.
