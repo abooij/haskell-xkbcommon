@@ -5,6 +5,8 @@ module Text.XkbCommon
 	  appendIncludePath, numIncludePaths, 
 	  
 	  Keymap(..), RMLVO, newKeymapFromNames,
+
+	  KeymapState(..), newKeymapState, updateKeymapState, getOneKeySym,
 	) where
 
 import Foreign
@@ -205,6 +207,7 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_include_path_appe
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_num_include_paths"
 	c_num_include_paths_context :: Ptr CContext -> IO CUInt
 
+-- note that we always pass 0 as the third argument since there are no options yet.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_keymap_new_from_names"
 	c_keymap_from_names :: Ptr CContext -> Ptr RMLVO -> CInt -> IO (Ptr CKeymap)
 
