@@ -109,6 +109,7 @@ instance Storable RMLVO where
 -- this is the important stuff
 
 
+-- TODO should return IO (Maybe Context)
 --construct a new Xkb context
 newContext :: ContextFlags -> IO Context
 newContext c =
@@ -136,27 +137,30 @@ numIncludePaths c =
 		\ptr -> (liftM fromIntegral) $ c_num_include_paths_context ptr
 
 
+-- TODO should return IO (Maybe Keymap)
 -- create keymap from optional preference of Rules+Model+Layouts+Variants+Options
 newKeymapFromNames :: Context -> RMLVO -> IO Keymap
 newKeymapFromNames ctx rmlvo = withForeignPtr (fromContext ctx) $ \ptr -> do
 	crmlvo <- new rmlvo
-	k <- c_keymap_from_names ptr crmlvo 0
+	k <- c_keymap_from_names ptr crmlvo #{const XKB_MAP_COMPILE_PLACEHOLDER }
 	l <- newForeignPtr c_unref_keymap k
 	return $ toKeymap l
 
+-- TODO should return IO (Maybe Keymap)
 -- create keymap from string buffer instead of loading from disk
 newKeymapFromString :: Context -> String -> IO Keymap
 newKeymapFromString ctx buf = withForeignPtr (fromContext ctx) $ \ptr -> withCString  buf $ \cstr -> do
-	k <- c_keymap_from_string ptr cstr 1 0
+	k <- c_keymap_from_string ptr cstr #{const XKB_KEYMAP_FORMAT_TEXT_V1} #{const XKB_MAP_COMPILE_PLACEHOLDER }
 	l <- newForeignPtr c_unref_keymap k
 	return $ toKeymap l
 
 -- convert a keymap to an enormous string buffer
 keymapAsString :: Keymap -> IO String
 keymapAsString km = withForeignPtr (fromKeymap km) $ \ptr ->
-	c_keymap_as_string ptr (-1) >>= peekCString
+	c_keymap_as_string ptr #{const XKB_KEYMAP_FORMAT_TEXT_V1} >>= peekCString
 
 
+-- TODO should return IO (Maybe KeymapState)
 -- create keymap state from keymap
 newKeymapState :: Keymap -> IO KeymapState
 newKeymapState km =
@@ -172,6 +176,7 @@ newKeymapState km =
 
 -- TODO MAKE PROPER
 -- the Int type may be replaced by a big enum-ish type, or maybe we should just 'type' it
+-- return value should def. get its own type
 updateKeymapState :: KeymapState -> Int -> Int -> IO Int
 updateKeymapState st key dir =
 	let fptr = fromKeymapState st
