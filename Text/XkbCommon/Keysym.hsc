@@ -4,14 +4,6 @@ module Text.XkbCommon.Keysym
 	(
 	) where
 
-import Foreign
-import Foreign.C
-import Foreign.Storable
-import Data.IORef
-import Data.Functor
-import Control.Monad (liftM, ap)
-import Control.Monad.Trans.Maybe (MaybeT)
-
 #include <xkbcommon/xkbcommon.h>
 
 -- keysym related

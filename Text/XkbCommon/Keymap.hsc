@@ -6,11 +6,6 @@ module Text.XkbCommon.Keymap
 
 import Foreign
 import Foreign.C
-import Foreign.Storable
-import Data.IORef
-import Data.Functor
-import Control.Monad (liftM, ap)
-import Control.Monad.Trans.Maybe (MaybeT)
 import qualified System.IO.Unsafe as S (unsafePerformIO)
 
 import Text.XkbCommon.InternalTypes

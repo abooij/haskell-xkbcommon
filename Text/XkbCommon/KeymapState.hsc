@@ -6,11 +6,7 @@ module Text.XkbCommon.KeymapState
 
 import Foreign
 import Foreign.C
-import Foreign.Storable
-import Data.IORef
 import Data.Functor
-import Control.Monad (liftM, ap)
-import Control.Monad.Trans.Maybe (MaybeT)
 
 import Text.XkbCommon.InternalTypes
 
