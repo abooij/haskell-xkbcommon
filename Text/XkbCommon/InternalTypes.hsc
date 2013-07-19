@@ -1,12 +1,12 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface, EmptyDataDecls #-}
 module Text.XkbCommon.InternalTypes
-	( Context, CContext, InternalContext, toContext, fromContext, ContextFlags, noDefaultIncludes,
-	  noEnvironmentNames, defaultFlags,
+	( Context, CContext, InternalContext, toContext, fromContext, withContext,
+	  ContextFlags, noDefaultIncludes, noEnvironmentNames, defaultFlags,
 	  pureFlags,
 
-	  Keymap, CKeymap, InternalKeymap, toKeymap, fromKeymap, RMLVO,
+	  Keymap, CKeymap, InternalKeymap, toKeymap, fromKeymap, withKeymap, RMLVO,
 
-	  KeymapState, CKeymapState, toKeymapState, fromKeymapState
+	  KeymapState, CKeymapState, toKeymapState, fromKeymapState, withKeymapState
 
 	) where
 
@@ -26,6 +26,8 @@ toContext :: InternalContext -> Context
 toContext ic = Context ic
 fromContext :: Context -> InternalContext
 fromContext (Context ic) = ic
+withContext :: Context -> (Ptr CContext -> IO a) -> IO a
+withContext = withForeignPtr . fromContext
 
 -- Option flags for context creation
 data ContextFlags = ContextFlags
@@ -44,6 +46,8 @@ toKeymap :: InternalKeymap -> Keymap
 toKeymap km = Keymap km
 fromKeymap :: Keymap -> InternalKeymap
 fromKeymap (Keymap km) = km
+withKeymap :: Keymap -> (Ptr CKeymap -> IO a) -> IO a
+withKeymap = withForeignPtr . fromKeymap
 
 {- the RMLVO type specifies preferences for keymap creation
    haskell equivalent of xkb_rule_names -}
@@ -91,6 +95,8 @@ toKeymapState :: InternalKeymapState -> KeymapState
 toKeymapState st = KeymapState st
 fromKeymapState :: KeymapState -> InternalKeymapState
 fromKeymapState (KeymapState st) = st
+withKeymapState :: KeymapState -> (Ptr CKeymapState -> IO a) -> IO a
+withKeymapState = withForeignPtr . fromKeymapState
 
 
 -- TODO keysym data types

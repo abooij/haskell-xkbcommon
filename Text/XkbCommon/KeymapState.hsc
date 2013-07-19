@@ -19,9 +19,7 @@ import Text.XkbCommon.InternalTypes
 
 -- create keymap state from keymap
 newKeymapState :: Keymap -> IO (Maybe KeymapState)
-newKeymapState km =
-	let fptr = fromKeymap km
-	in withForeignPtr fptr $
+newKeymapState km = withKeymap km $
 		\ ptr -> do
 			k <- c_new_keymap_state ptr
 			l <- newForeignPtr c_unref_keymap_state k
@@ -33,15 +31,11 @@ newKeymapState km =
 -- the Int type may be replaced by a big enum-ish type, or maybe we should just 'type' it
 -- return value should def. get its own type -}
 updateKeymapState :: KeymapState -> Int -> Int -> IO Int
-updateKeymapState st key dir =
-	let fptr = fromKeymapState st
-	in withForeignPtr fptr $
+updateKeymapState st key dir = withKeymapState st $
 		\ ptr -> fromIntegral <$> c_update_key_state ptr (fromIntegral key) (fromIntegral dir)
 
 getOneKeySym :: KeymapState -> Int -> IO Int
-getOneKeySym st key =
-	let fptr = fromKeymapState st
-	in withForeignPtr fptr $
+getOneKeySym st key = withKeymapState st $
 		\ ptr -> fromIntegral <$> c_get_one_key_sym ptr (fromIntegral key)
 
 

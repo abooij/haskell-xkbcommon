@@ -31,22 +31,17 @@ newContext c = do
 
 -- stateful handling of Xkb context search paths for keymaps
 appendIncludePath :: Context -> String -> IO (Maybe ())
-appendIncludePath c str =
-	withCString str $
-		\ cstr -> withForeignPtr (fromContext c) $
-			\ ptr -> do
-				err <- c_append_include_path_context ptr cstr
-				return $
-					if err == 1
-						then Just ()
-						else Nothing
+appendIncludePath c str = withCString str $
+	\ cstr -> withContext c $
+		\ ptr -> do
+			err <- c_append_include_path_context ptr cstr
+			return $ if err == 1
+				then Just ()
+				else Nothing
 
 
 numIncludePaths :: Context -> IO Int
-numIncludePaths c =
-	let fptr = fromContext c
-	in withForeignPtr fptr $
-		\ ptr -> (liftM fromIntegral) $ c_num_include_paths_context ptr
+numIncludePaths c = withContext c $ (liftM fromIntegral) . c_num_include_paths_context
 
 
 -- BORING TRANSLATION STUFF
