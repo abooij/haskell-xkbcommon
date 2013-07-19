@@ -11,6 +11,7 @@ import Data.IORef
 import Data.Functor
 import Control.Monad (liftM, ap)
 import Control.Monad.Trans.Maybe (MaybeT)
+import qualified System.IO.Unsafe as S (unsafePerformIO)
 
 import Text.XkbCommon.InternalTypes
 
@@ -18,8 +19,9 @@ import Text.XkbCommon.InternalTypes
 
 
 -- create keymap from optional preference of Rules+Model+Layouts+Variants+Options
-newKeymapFromNames :: Context -> RMLVO -> IO (Maybe Keymap)
-newKeymapFromNames ctx rmlvo = withContext ctx $ \ ptr -> do
+-- immutable but creation can fail.
+newKeymapFromNames :: Context -> RMLVO -> Maybe Keymap
+newKeymapFromNames ctx rmlvo = S.unsafePerformIO $ withContext ctx $ \ ptr -> do
 	crmlvo <- new rmlvo
 	k <- c_keymap_from_names ptr crmlvo #{const XKB_MAP_COMPILE_PLACEHOLDER }
 	l <- newForeignPtr c_unref_keymap k
@@ -28,8 +30,9 @@ newKeymapFromNames ctx rmlvo = withContext ctx $ \ ptr -> do
 		else return $ Just $ toKeymap l
 
 -- create keymap from string buffer instead of loading from disk
-newKeymapFromString :: Context -> String -> IO (Maybe Keymap)
-newKeymapFromString ctx buf = withCString buf $ \ cstr -> withContext ctx $ \ ptr -> do
+-- immutable but creation can fail.
+newKeymapFromString :: Context -> String -> Maybe Keymap
+newKeymapFromString ctx buf = S.unsafePerformIO $ withCString buf $ \ cstr -> withContext ctx $ \ ptr -> do
 	k <- c_keymap_from_string ptr cstr #{const XKB_KEYMAP_FORMAT_TEXT_V1} #{const XKB_MAP_COMPILE_PLACEHOLDER }
 	l <- newForeignPtr c_unref_keymap k
 	if k == nullPtr
@@ -37,13 +40,12 @@ newKeymapFromString ctx buf = withCString buf $ \ cstr -> withContext ctx $ \ pt
 		else return . Just $ toKeymap l
 
 -- convert a keymap to an enormous string buffer
-keymapAsString :: Keymap -> IO String
-keymapAsString km = withKeymap km $ \ ptr ->
+keymapAsString :: Keymap -> String
+keymapAsString km = S.unsafePerformIO $ withKeymap km $ \ ptr ->
 	c_keymap_as_string ptr #{const XKB_KEYMAP_FORMAT_TEXT_V1} >>= peekCString
 
--- c_keymap_layout_name :: Ptr CKeymap -> CInt -> IO CString
-keymapLayoutName :: Keymap -> IO String
-keymapLayoutName km = withKeymap km $
+keymapLayoutName :: Keymap -> String
+keymapLayoutName km = S.unsafePerformIO $ withKeymap km $
 		\ ptr -> c_keymap_layout_name ptr 0 >>= peekCString
 
 

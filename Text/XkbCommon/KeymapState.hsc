@@ -18,14 +18,12 @@ import Text.XkbCommon.InternalTypes
 
 
 -- create keymap state from keymap
-newKeymapState :: Keymap -> IO (Maybe KeymapState)
+newKeymapState :: Keymap -> IO KeymapState
 newKeymapState km = withKeymap km $
 		\ ptr -> do
 			k <- c_new_keymap_state ptr
 			l <- newForeignPtr c_unref_keymap_state k
-			if k == nullPtr
-				then return Nothing
-				else return . Just $ toKeymapState l
+			return $ toKeymapState l
 
 {- TODO MAKE PROPER
 -- the Int type may be replaced by a big enum-ish type, or maybe we should just 'type' it

@@ -20,6 +20,7 @@ import Text.XkbCommon.InternalTypes
 
 
 -- construct a new Xkb context
+-- xkb_context_new can fail if the default include path does not exist
 newContext :: ContextFlags -> IO (Maybe Context)
 newContext c = do
 	k <- c_new_context $ translateContextFlags c
@@ -30,6 +31,7 @@ newContext c = do
 			return $ Just $ toContext l
 
 -- stateful handling of Xkb context search paths for keymaps
+-- fails if the path does not exist
 appendIncludePath :: Context -> String -> IO (Maybe ())
 appendIncludePath c str = withCString str $
 	\ cstr -> withContext c $
