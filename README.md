@@ -1,8 +1,8 @@
 haskell-xkbcommon
 ===
 
-[libxkbcommon][] is a library by (primarily) Daniel Stone which processes keyboard events into
-characters, taking into account the keyboard layout and locale settings.
+[libxkbcommon][] is a library by (primarily) Daniel Stone and Ran Benita which processes keyboard
+events into characters, taking into account the keyboard layout and locale settings.
 
 It is intended to, on the one hand, replace existing such functionality in the X11 project,
 and on the other, provide a cleaner base for new display protocol projects such as [Wayland][].
