@@ -4,10 +4,12 @@ module Text.XkbCommon.InternalTypes
 	  ContextFlags, noDefaultIncludes, noEnvironmentNames, defaultFlags,
 	  pureFlags,
 
-	  Keymap, CKeymap, InternalKeymap, toKeymap, fromKeymap, withKeymap, RMLVO,
+	  Keymap, CKeymap, InternalKeymap, toKeymap, fromKeymap, withKeymap, RMLVO(..),
 
-	  KeymapState, CKeymapState, toKeymapState, fromKeymapState, withKeymapState
+	  KeymapState, CKeymapState, toKeymapState, fromKeymapState, withKeymapState,
 
+	  CLogLevel(..), CKeycode(..), CLayoutIndex(..), CModIndex(..), CLevelIndex(..),
+	  CLedIndex(..), CKeysym(..), CDirection(..), CStateComponent(..), CModMask(..),
 	) where
 
 import Foreign
@@ -98,5 +100,19 @@ fromKeymapState (KeymapState st) = st
 withKeymapState :: KeymapState -> (Ptr CKeymapState -> IO a) -> IO a
 withKeymapState = withForeignPtr . fromKeymapState
 
+
+-- newtype CCompileFlags = CCompileFlags #{type enum xkb_keymap_compile_flags} -- only one option, so disabled
+newtype CDirection = CDirection #{type enum xkb_key_direction}
+newtype CKeycode = CKeycode #{type xkb_keycode_t}
+-- newtype CKeymapFormat = CKeymapFormat #{type enum xkb_keymap_format} -- only one option, so disabled
+newtype CKeysym = CKeysym #{type xkb_keysym_t}
+-- newtype CKeysymFlags = CKeysymFlags #{type enum xkb_keysym_flags} -- only one option, so disabled
+newtype CLayoutIndex = CLayoutIndex #{type xkb_layout_index_t}
+newtype CLedIndex = CLedIndex #{type xkb_led_index_t}
+newtype CLevelIndex = CLevelIndex #{type xkb_level_index_t}
+newtype CLogLevel = CLogLevel #{type enum xkb_log_level}
+newtype CModIndex = CModIndex #{type xkb_mod_index_t}
+newtype CModMask = CModMask #{type xkb_mod_mask_t}
+newtype CStateComponent = CStateComponent #{type enum xkb_state_component} -- ATTENTION this is a bitmask!
 
 -- TODO keysym data types

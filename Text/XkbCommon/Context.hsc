@@ -44,6 +44,7 @@ numIncludePaths c = withContext c $ (liftM fromIntegral) . c_num_include_paths_c
 
 -- BORING TRANSLATION STUFF
 
+-- ugh, this one is rather ugly, but i really don't know how else to tackle it.
 type CContextFlags = #type int
 #{enum CContextFlags,
 	, noFlags       = 0
@@ -78,39 +79,57 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_include_path_appe
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_num_include_paths"
 	c_num_include_paths_context :: Ptr CContext -> IO CUInt
 
-{-
-int 	xkb_context::xkb_context_include_path_append_default (struct xkb_context *context)
- 	Append the default include paths to the contexts include path.
 
-int 	xkb_context::xkb_context_include_path_reset_defaults (struct xkb_context *context)
- 	Reset the context's include path to the default.
 
-void 	xkb_context::xkb_context_include_path_clear (struct xkb_context *context)
- 	Remove all entries from the context's include path.
 
-unsigned int 	xkb_context::xkb_context_num_include_paths (struct xkb_context *context)
- 	Get the number of paths in the context's include path.
+-- The foreign calls below are not yet bound
 
-const char * 	xkb_context::xkb_context_include_path_get (struct xkb_context *context, unsigned int index)
- 	Get a specific include path from the context's include path.
--}
+
+-- int 	xkb_context::xkb_context_include_path_append_default (struct xkb_context *context)
+--  	Append the default include paths to the contexts include path.
+foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_include_path_append_default"
+	c_append_default_include :: Ptr CContext -> IO CInt
+
+-- int 	xkb_context::xkb_context_include_path_reset_defaults (struct xkb_context *context)
+--  	Reset the context's include path to the default.
+--foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_include_path_reset_defaults"
+
+-- void 	xkb_context::xkb_context_include_path_clear (struct xkb_context *context)
+--  	Remove all entries from the context's include path.
+foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_include_path_clear"
+	c_clear_includes :: Ptr CContext -> IO ()
+
+-- const char * 	xkb_context::xkb_context_include_path_get (struct xkb_context *context, unsigned int index)
+--  	Get a specific include path from the context's include path.
+foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_include_path_get"
+	c_show_include_path :: Ptr CContext -> IO CString
 
 
 -- logging related
-{-
-void 	xkb_context::xkb_context_set_log_level (struct xkb_context *context, enum xkb_log_level level)
- 	Set the current logging level.
 
-enum xkb_log_level 	xkb_context::xkb_context_get_log_level (struct xkb_context *context)
- 	Get the current logging level.
+-- void 	xkb_context::xkb_context_set_log_level (struct xkb_context *context, enum xkb_log_level level)
+--  	Set the current logging level.
+foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_set_log_level"
+	c_set_log_level :: Ptr CContext -> CLogLevel -> IO ()
 
-void 	xkb_context::xkb_context_set_log_verbosity (struct xkb_context *context, int verbosity)
- 	Sets the current logging verbosity.
+-- enum xkb_log_level 	xkb_context::xkb_context_get_log_level (struct xkb_context *context)
+--  	Get the current logging level.
+foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_get_log_level"
+	c_get_log_level :: Ptr CContext -> IO CLogLevel
 
-int 	xkb_context::xkb_context_get_log_verbosity (struct xkb_context *context)
- 	Get the current logging verbosity of the context.
+-- void 	xkb_context::xkb_context_set_log_verbosity (struct xkb_context *context, int verbosity)
+--  	Sets the current logging verbosity.
+foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_set_log_verbosity"
+	c_set_log_verbosity :: Ptr CContext -> CInt -> IO ()
 
-void 	xkb_context::xkb_context_set_log_fn (struct xkb_context *context, void(*log_fn)(struct xkb_context *context, enum xkb_log_level level, const char *format, va_list args))
- 	Set a custom function to handle logging messages.
--}
+-- int 	xkb_context::xkb_context_get_log_verbosity (struct xkb_context *context)
+--  	Get the current logging verbosity of the context.
+foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_get_log_verbosity"
+	c_get_log_verbosity :: Ptr CContext -> IO CInt
+
+-- we have to manually translate this in C because the haskell FFI does not support va_list!
+-- void 	xkb_context::xkb_context_set_log_fn (struct xkb_context *context, void(*log_fn)(struct xkb_context *context, enum xkb_log_level level, const char *format, va_list args))
+--  	Set a custom function to handle logging messages.
+-- foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_set_log_fn"
+-- 	c_set_log_fun :: Ptr CContext -> FunPtr (Ptr CContext -> CLogLevel -> CString -> #{type va_list} -> IO ()) -> IO ()
 
