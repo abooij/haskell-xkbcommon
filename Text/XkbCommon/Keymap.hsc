@@ -14,9 +14,9 @@ import Text.XkbCommon.InternalTypes
 
 
 -- create keymap from optional preference of Rules+Model+Layouts+Variants+Options
--- immutable but creation can fail.
-newKeymapFromNames :: Context -> RMLVO -> Maybe Keymap
-newKeymapFromNames ctx rmlvo = S.unsafePerformIO $ withContext ctx $ \ ptr -> do
+-- immutable but creation can fail. IO because it loads from disk.
+newKeymapFromNames :: Context -> RMLVO -> IO (Maybe Keymap)
+newKeymapFromNames ctx rmlvo = withContext ctx $ \ ptr -> do
 	crmlvo <- new rmlvo
 	k <- c_keymap_from_names ptr crmlvo #{const XKB_MAP_COMPILE_PLACEHOLDER }
 	l <- newForeignPtr c_unref_keymap k
@@ -25,7 +25,7 @@ newKeymapFromNames ctx rmlvo = S.unsafePerformIO $ withContext ctx $ \ ptr -> do
 		else return $ Just $ toKeymap l
 
 -- create keymap from string buffer instead of loading from disk
--- immutable but creation can fail.
+-- immutable but creation can fail. not IO because it just parses a string.
 newKeymapFromString :: Context -> String -> Maybe Keymap
 newKeymapFromString ctx buf = S.unsafePerformIO $ withCString buf $ \ cstr -> withContext ctx $ \ ptr -> do
 	k <- c_keymap_from_string ptr cstr #{const XKB_KEYMAP_FORMAT_TEXT_V1} #{const XKB_MAP_COMPILE_PLACEHOLDER }
