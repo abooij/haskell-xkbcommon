@@ -1,0 +1,4 @@
+-add support for unbound function calls
+-add support for logging
+-add another layer to make haskell-xkbcommon look more like a haskell library
+-translate test suite to haskell
