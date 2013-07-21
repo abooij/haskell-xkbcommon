@@ -1,7 +1,9 @@
-{-# LANGUAGE CPP, ForeignFunctionInterface, EmptyDataDecls #-}
+{-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.Keymap
-	( Keymap(..), RMLVO, newKeymapFromNames, newKeymapFromString, keymapAsString,
+	( Keymap(..), RMLVO, newKeymapFromNames, newKeymapFromString, keymapAsString, keymapNumLayouts,
+	  keymapKeyNumLayouts, keymapNumMods, keymapModName, keymapNumLevels, keymapNumLeds,
+	  keymapLedName, keymapKeyRepeats
 	) where
 
 import Foreign
@@ -20,9 +22,7 @@ newKeymapFromNames ctx rmlvo = withContext ctx $ \ ptr -> do
 	crmlvo <- new rmlvo
 	k <- c_keymap_from_names ptr crmlvo #{const XKB_MAP_COMPILE_PLACEHOLDER }
 	l <- newForeignPtr c_unref_keymap k
-	if k == nullPtr
-		then return Nothing
-		else return $ Just $ toKeymap l
+	return (if k == nullPtr then Nothing else Just $ toKeymap l)
 
 -- create keymap from string buffer instead of loading from disk
 -- immutable but creation can fail. not IO because it just parses a string.
@@ -30,14 +30,21 @@ newKeymapFromString :: Context -> String -> Maybe Keymap
 newKeymapFromString ctx buf = S.unsafePerformIO $ withCString buf $ \ cstr -> withContext ctx $ \ ptr -> do
 	k <- c_keymap_from_string ptr cstr #{const XKB_KEYMAP_FORMAT_TEXT_V1} #{const XKB_MAP_COMPILE_PLACEHOLDER }
 	l <- newForeignPtr c_unref_keymap k
-	if k == nullPtr
-		then return Nothing
-		else return . Just $ toKeymap l
+	return (if k == nullPtr then Nothing else Just $ toKeymap l)
 
 -- convert a keymap to an enormous string buffer
 keymapAsString :: Keymap -> String
 keymapAsString km = S.unsafePerformIO $ withKeymap km $ \ ptr ->
 	c_keymap_as_string ptr #{const XKB_KEYMAP_FORMAT_TEXT_V1} >>= peekCString
+
+-- Get the number of layouts in the keymap.
+keymapNumLayouts :: Keymap -> CLayoutIndex
+keymapNumLayouts km = S.unsafePerformIO $ withKeymap km c_keymap_num_layouts
+
+-- Get the number of layouts for a specific key.
+-- c_keymap_num_layouts_key :: Ptr CKeymap -> CKeycode -> IO CLayoutIndex
+keymapKeyNumLayouts :: Keymap -> CKeycode -> CLayoutIndex
+keymapKeyNumLayouts km key = S.unsafePerformIO $ withKeymap km $ \ ptr -> c_keymap_num_layouts_key ptr key
 
 -- TODO free CString after use
 keymapLayoutName :: Keymap -> CLayoutIndex -> String
@@ -48,6 +55,38 @@ keymapLayoutName km idx = S.unsafePerformIO $ withKeymap km $
 			free cstr
 			return name
 
+-- Get the number of modifiers in the keymap.
+keymapNumMods :: Keymap -> CModIndex
+keymapNumMods km = S.unsafePerformIO $ withKeymap km c_keymap_num_mods
+
+-- Get the name of a modifier by index.
+keymapModName :: Keymap -> CModIndex -> String
+keymapModName km idx = S.unsafePerformIO $ withKeymap km $
+	\ ptr -> c_keymap_mod_name ptr idx >>= readCString
+
+-- Get the number of shift levels for a specific key and layout.
+keymapNumLevels :: Keymap -> CKeycode -> CLayoutIndex -> CLevelIndex
+keymapNumLevels km kc idx = S.unsafePerformIO $ withKeymap km $ \ ptr -> c_keymap_num_levels ptr kc idx
+
+-- Get the keysyms obtained from pressing a key in a given layout and shift level.
+-- c_keymap_syms_by_level :: Ptr CKeymap -> CKeycode -> CLayoutIndex -> CLevelIndex -> Ptr (Ptr CKeysym) -> IO CInt
+-- TODO
+
+-- Get the number of LEDs in the keymap. More...
+-- c_keymap_num_leds :: Ptr CKeymap -> IO CLedIndex
+keymapNumLeds :: Keymap -> CLedIndex
+keymapNumLeds km = S.unsafePerformIO $ withKeymap km c_keymap_num_leds
+
+-- Get the name of a LED by index.
+-- c_keymap_led_name :: Ptr CKeymap -> CLedIndex -> IO CString
+keymapLedName :: Keymap -> CLedIndex -> String
+keymapLedName km id = S.unsafePerformIO . withKeymap km $
+	\ ptr -> c_keymap_led_name ptr id >>= readCString
+
+-- Determine whether a key should repeat or not.
+-- c_keymap_key_repeats :: Ptr CKeymap -> CKeycode -> IO CInt
+keymapKeyRepeats :: Keymap -> CKeycode -> Bool
+keymapKeyRepeats km kc = S.unsafePerformIO (withKeymap km $ \ ptr -> c_keymap_key_repeats ptr kc) == 0
 
 -- FOREIGN CCALLS
 
@@ -72,11 +111,6 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h &xkb_keymap_unref"
 -- Get the name of a layout by index.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_keymap_layout_get_name"
 	c_keymap_layout_name :: Ptr CKeymap -> CLayoutIndex -> IO CString
-
-
-
-
--- The foreign calls below are not yet bound
 
 --xkb_mod_index_t 	xkb_keymap::xkb_keymap_num_mods (struct xkb_keymap *keymap)
 -- 	Get the number of modifiers in the keymap.

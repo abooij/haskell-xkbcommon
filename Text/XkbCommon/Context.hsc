@@ -1,8 +1,8 @@
-{-# LANGUAGE CPP, ForeignFunctionInterface, EmptyDataDecls #-}
+{-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.Context
 	( Context(..), ContextFlags, defaultFlags, newContext,
-	  appendIncludePath, numIncludePaths,
+	  appendIncludePath, numIncludePaths, clearIncludePath, appendDefaultIncludePath,
 	) where
 
 import Foreign
@@ -26,6 +26,9 @@ newContext c = do
 			l <- newForeignPtr c_unref_context k
 			return $ Just $ toContext l
 
+clearIncludePath :: Context -> IO ()
+clearIncludePath ctx = withContext ctx $ \ ptr -> c_clear_includes ptr
+
 -- stateful handling of Xkb context search paths for keymaps
 -- fails if the path does not exist
 appendIncludePath :: Context -> String -> IO (Maybe ())
@@ -37,9 +40,13 @@ appendIncludePath c str = withCString str $
 				then Just ()
 				else Nothing
 
+appendDefaultIncludePath :: Context -> IO (Maybe ())
+appendDefaultIncludePath ctx = withContext ctx $ \ ptr -> do
+	ret <- c_append_default_include ptr -- returns 0 on error
+	return (if ret == 0 then Nothing else Just ())
 
 numIncludePaths :: Context -> IO Int
-numIncludePaths c = withContext c $ (liftM fromIntegral) . c_num_include_paths_context
+numIncludePaths c = withContext c $ liftM fromIntegral . c_num_include_paths_context
 
 
 -- BORING TRANSLATION STUFF
@@ -79,12 +86,6 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_include_path_appe
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_num_include_paths"
 	c_num_include_paths_context :: Ptr CContext -> IO CUInt
 
-
-
-
--- The foreign calls below are not yet bound
-
-
 -- int 	xkb_context::xkb_context_include_path_append_default (struct xkb_context *context)
 --  	Append the default include paths to the contexts include path.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_include_path_append_default"
@@ -104,6 +105,8 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_include_path_clea
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_include_path_get"
 	c_show_include_path :: Ptr CContext -> IO CString
 
+
+-- The foreign calls below are not yet bound... not sure I want to at this stage.
 
 -- logging related
 

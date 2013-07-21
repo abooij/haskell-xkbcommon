@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, ForeignFunctionInterface, EmptyDataDecls #-}
+{-# LANGUAGE CPP, EmptyDataDecls #-}
 module Text.XkbCommon.InternalTypes
 	( Context, CContext, InternalContext, toContext, fromContext, withContext,
 	  ContextFlags, noDefaultIncludes, noEnvironmentNames, defaultFlags,
@@ -8,6 +8,8 @@ module Text.XkbCommon.InternalTypes
 
 	  KeymapState, CKeymapState, toKeymapState, fromKeymapState, withKeymapState,
 
+	  readCString,
+
 	  CLogLevel(..), CKeycode(..), CLayoutIndex(..), CModIndex(..), CLevelIndex(..),
 	  CLedIndex(..), CKeysym(..), CDirection(..), CStateComponent(..), CModMask(..),
 	) where
@@ -16,6 +18,7 @@ import Foreign
 import Foreign.C
 import Foreign.Storable
 import Control.Monad (ap)
+import qualified Foreign.Storable.Newtype as Store
 
 #include <xkbcommon/xkbcommon.h>
 
@@ -25,7 +28,7 @@ data Context = Context InternalContext
 data CContext
 type InternalContext = ForeignPtr CContext
 toContext :: InternalContext -> Context
-toContext ic = Context ic
+toContext = Context
 fromContext :: Context -> InternalContext
 fromContext (Context ic) = ic
 withContext :: Context -> (Ptr CContext -> IO a) -> IO a
@@ -45,7 +48,7 @@ data Keymap = Keymap InternalKeymap
 data CKeymap
 type InternalKeymap = ForeignPtr CKeymap
 toKeymap :: InternalKeymap -> Keymap
-toKeymap km = Keymap km
+toKeymap = Keymap
 fromKeymap :: Keymap -> InternalKeymap
 fromKeymap (Keymap km) = km
 withKeymap :: Keymap -> (Ptr CKeymap -> IO a) -> IO a
@@ -75,17 +78,17 @@ instance Storable RMLVO where
 	alignment _ = alignment (undefined :: CInt)
 
 	poke p rmlvo = do
-		wrapString (rules rmlvo) >>= (#{poke struct xkb_rule_names, rules} p)
-		wrapString (model rmlvo) >>= (#{poke struct xkb_rule_names, model} p)
-		wrapString (layout rmlvo) >>= (#{poke struct xkb_rule_names, layout} p)
-		wrapString (variant rmlvo) >>= (#{poke struct xkb_rule_names, variant} p)
-		wrapString (options rmlvo) >>= (#{poke struct xkb_rule_names, options} p)
+		wrapString (rules rmlvo) >>= #{poke struct xkb_rule_names, rules} p
+		wrapString (model rmlvo) >>= #{poke struct xkb_rule_names, model} p
+		wrapString (layout rmlvo) >>= #{poke struct xkb_rule_names, layout} p
+		wrapString (variant rmlvo) >>= #{poke struct xkb_rule_names, variant} p
+		wrapString (options rmlvo) >>= #{poke struct xkb_rule_names, options} p
 	peek p = return RMLVO
-		`ap` ((#{peek struct xkb_rule_names, rules} p) >>= wrapCString)
-		`ap` ((#{peek struct xkb_rule_names, model} p) >>= wrapCString)
-		`ap` ((#{peek struct xkb_rule_names, layout} p) >>= wrapCString)
-		`ap` ((#{peek struct xkb_rule_names, variant} p) >>= wrapCString)
-		`ap` ((#{peek struct xkb_rule_names, options} p) >>= wrapCString)
+		`ap` (#{peek struct xkb_rule_names, rules} p >>= wrapCString)
+		`ap` (#{peek struct xkb_rule_names, model} p >>= wrapCString)
+		`ap` (#{peek struct xkb_rule_names, layout} p >>= wrapCString)
+		`ap` (#{peek struct xkb_rule_names, variant} p >>= wrapCString)
+		`ap` (#{peek struct xkb_rule_names, options} p >>= wrapCString)
 
 
 -- KeymapState is struct xkb_state *
@@ -94,18 +97,33 @@ data KeymapState = KeymapState InternalKeymapState
 data CKeymapState
 type InternalKeymapState = ForeignPtr CKeymapState
 toKeymapState :: InternalKeymapState -> KeymapState
-toKeymapState st = KeymapState st
+toKeymapState = KeymapState
 fromKeymapState :: KeymapState -> InternalKeymapState
 fromKeymapState (KeymapState st) = st
 withKeymapState :: KeymapState -> (Ptr CKeymapState -> IO a) -> IO a
 withKeymapState = withForeignPtr . fromKeymapState
 
 
+-- useful functions
+
+-- reads a C string obtained from the library and proceeds to free it
+readCString :: CString -> IO String
+readCString cstr = do
+	str <- peekCString cstr
+	free cstr
+	return str
+
+newtype CKeysym = CKeysym {unCKeysym :: #{type xkb_keysym_t}}
+instance Storable CKeysym where
+	sizeOf = Store.sizeOf unCKeysym
+	alignment = Store.alignment unCKeysym
+	peek = Store.peek CKeysym
+	poke = Store.poke unCKeysym
+
 -- newtype CCompileFlags = CCompileFlags #{type enum xkb_keymap_compile_flags} -- only one option, so disabled
 newtype CDirection = CDirection #{type enum xkb_key_direction}
 newtype CKeycode = CKeycode #{type xkb_keycode_t}
 -- newtype CKeymapFormat = CKeymapFormat #{type enum xkb_keymap_format} -- only one option, so disabled
-newtype CKeysym = CKeysym #{type xkb_keysym_t}
 -- newtype CKeysymFlags = CKeysymFlags #{type enum xkb_keysym_flags} -- only one option, so disabled
 newtype CLayoutIndex = CLayoutIndex #{type xkb_layout_index_t}
 newtype CLedIndex = CLedIndex #{type xkb_led_index_t}

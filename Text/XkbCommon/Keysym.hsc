@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, ForeignFunctionInterface, EmptyDataDecls #-}
+{-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.Keysym
 	(

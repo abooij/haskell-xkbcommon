@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, ForeignFunctionInterface, EmptyDataDecls #-}
+{-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.KeymapState
 	( KeymapState(..), newKeymapState, updateKeymapState, getOneKeySym,
@@ -6,6 +6,7 @@ module Text.XkbCommon.KeymapState
 
 import Foreign
 import Foreign.C
+import Foreign.Storable
 import Data.Functor
 
 import Text.XkbCommon.InternalTypes
@@ -21,9 +22,6 @@ newKeymapState km = withKeymap km $
 			l <- newForeignPtr c_unref_keymap_state k
 			return $ toKeymapState l
 
-{- TODO MAKE PROPER
--- the Int type may be replaced by a big enum-ish type, or maybe we should just 'type' it
--- return value should def. get its own type -}
 updateKeymapState :: KeymapState -> CKeycode -> CDirection -> IO CStateComponent
 updateKeymapState st key dir = withKeymapState st $
 		\ ptr -> c_update_key_state ptr key dir
@@ -31,6 +29,59 @@ updateKeymapState st key dir = withKeymapState st $
 getOneKeySym :: KeymapState -> CKeycode -> IO CKeysym
 getOneKeySym st key = withKeymapState st $
 		\ ptr -> c_get_one_key_sym ptr key
+
+-- TODO TEST TEST TEST I HAVE NO IDEA IF THIS WORKS!!!
+-- Get the keysyms obtained from pressing a particular key in a given keyboard state.
+-- c_state_get_syms :: Ptr CKeymapState -> CKeycode -> Ptr (Ptr CKeysym) -> IO CInt
+getStateSyms :: KeymapState -> CKeycode -> IO [CKeysym]
+getStateSyms ks key = withKeymapState ks $ \ ptr -> do
+	init_ptr <- newArray [] :: IO (Ptr CKeysym)
+	in_ptr <- new init_ptr
+	num_out <- c_state_get_syms ptr key in_ptr
+	deref_ptr <- peek in_ptr
+	out_list <- peekArray (fromIntegral num_out) deref_ptr
+	free deref_ptr >> free in_ptr >> free init_ptr
+	return out_list
+
+-- Get the effective layout index for a key in a given keyboard state.
+-- c_get_layout :: Ptr CKeymapState -> CKeycode -> IO CLayoutIndex
+
+-- Get the effective shift level for a key in a given keyboard state and layout.
+-- c_key_get_level :: Ptr CKeymapState -> CKeycode -> CLayoutIndex -> IO CLevelIndex
+
+-- Update a keyboard state from a set of explicit masks.
+-- c_update_state_mask :: Ptr CKeymapState -> CModMask -> CModMask -> CModMask -> CLayoutIndex -> CLayoutIndex -> CLayoutIndex -> IO CStateComponent
+
+-- The counterpart to xkb_state_update_mask for modifiers, to be used on the server side of serialization.
+-- c_serialize_state_mods :: Ptr CKeymapState -> CStateComponent -> IO CModMask
+
+-- The counterpart to xkb_state_update_mask for layouts, to be used on the server side of serialization.
+-- c_serialize_state :: Ptr CKeymapState -> CStateComponent -> IO CLayoutIndex
+
+-- Test whether a modifier is active in a given keyboard state by name.
+-- c_state_mod_name_is_active :: Ptr CKeymapState -> CString -> CStateComponent -> IO Int
+
+-- Test whether a modifier is active in a given keyboard state by index.
+-- c_state_mod_idx_is_active :: Ptr CKeymapState -> CModIndex -> CStateComponent -> IO CInt
+
+-- Test whether a modifier is consumed by keyboard state translation for a key.
+-- c_modifier_is_consumed :: Ptr CKeymapState -> CKeycode -> CModIndex -> IO CInt
+
+-- Remove consumed modifiers from a modifier mask for a key.
+-- c_remove_consumed_modifiers :: Ptr CKeymapState -> CKeycode -> CModMask -> IO CModMask
+
+-- Test whether a layout is active in a given keyboard state by name.
+-- c_layout_name_is_active :: Ptr CKeymapState -> CString -> CStateComponent -> IO CInt
+
+-- Test whether a layout is active in a given keyboard state by index.
+-- c_layout_index_is_active :: Ptr CKeymapState -> CLayoutIndex -> CStateComponent -> IO CInt
+
+-- Test whether a LED is active in a given keyboard state by name.
+-- c_led_name_is_active :: Ptr CKeymapState -> CString -> IO CInt
+
+-- Test whether a LED is active in a given keyboard state by index.
+-- c_led_index_is_active :: Ptr CKeymapState -> CLedIndex -> IO CInt
+
 
 
 -- keymap state related
@@ -56,7 +107,7 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_key_get_one_sym"
 -- int 	xkb_state::xkb_state_key_get_syms (struct xkb_state *state, xkb_keycode_t key, const xkb_keysym_t **syms_out)
 --  	Get the keysyms obtained from pressing a particular key in a given keyboard state.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_key_get_syms"
-	c_state_get_syms :: Ptr CKeymapState -> Ptr (Ptr CKeysym) -> IO CInt
+	c_state_get_syms :: Ptr CKeymapState -> CKeycode -> Ptr (Ptr CKeysym) -> IO CInt
 
 -- xkb_layout_index_t 	xkb_state::xkb_state_key_get_layout (struct xkb_state *state, xkb_keycode_t key)
 --  	Get the effective layout index for a key in a given keyboard state.
