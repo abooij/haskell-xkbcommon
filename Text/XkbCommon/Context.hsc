@@ -3,6 +3,7 @@
 module Text.XkbCommon.Context
 	( Context(..), ContextFlags, defaultFlags, pureFlags, newContext,
 	  appendIncludePath, numIncludePaths, clearIncludePath, appendDefaultIncludePath,
+	  includePathShow,
 	) where
 
 import Foreign
@@ -48,6 +49,10 @@ appendDefaultIncludePath ctx = withContext ctx $ \ ptr -> do
 numIncludePaths :: Context -> IO Int
 numIncludePaths c = withContext c $ liftM fromIntegral . c_num_include_paths_context
 
+-- Get a specific include path from the context's include path.
+-- c_show_include_path :: Ptr CContext -> CUInt -> IO CString
+includePathShow :: Context -> Int -> IO String
+includePathShow ctx idx = withContext ctx $ \ ptr -> c_show_include_path ptr (fromIntegral idx) >>= peekCString
 
 -- BORING TRANSLATION STUFF
 
@@ -103,7 +108,7 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_include_path_clea
 -- const char * 	xkb_context::xkb_context_include_path_get (struct xkb_context *context, unsigned int index)
 --  	Get a specific include path from the context's include path.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_include_path_get"
-	c_show_include_path :: Ptr CContext -> IO CString
+	c_show_include_path :: Ptr CContext -> CUInt -> IO CString
 
 
 -- The foreign calls below are not yet bound... not sure I want to at this stage.
