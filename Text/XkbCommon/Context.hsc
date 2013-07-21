@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.Context
-	( Context(..), ContextFlags, defaultFlags, newContext,
+	( Context(..), ContextFlags, defaultFlags, pureFlags, newContext,
 	  appendIncludePath, numIncludePaths, clearIncludePath, appendDefaultIncludePath,
 	) where
 

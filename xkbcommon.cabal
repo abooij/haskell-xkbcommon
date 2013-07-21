@@ -26,3 +26,9 @@ library
   -- other-modules:
   build-depends:       base ==4.6.*, transformers, storable-record
   -- build-tools:         c2hs
+
+Test-Suite context
+  type: exitcode-stdio-1.0
+  main-is: tests/context.hs
+  build-depends : base, xkbcommon
+  extra-libraries: xkbcommon
