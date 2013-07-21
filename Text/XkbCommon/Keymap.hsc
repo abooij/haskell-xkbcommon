@@ -39,9 +39,14 @@ keymapAsString :: Keymap -> String
 keymapAsString km = S.unsafePerformIO $ withKeymap km $ \ ptr ->
 	c_keymap_as_string ptr #{const XKB_KEYMAP_FORMAT_TEXT_V1} >>= peekCString
 
+-- TODO free CString after use
 keymapLayoutName :: Keymap -> CLayoutIndex -> String
 keymapLayoutName km idx = S.unsafePerformIO $ withKeymap km $
-		\ ptr -> c_keymap_layout_name ptr idx >>= peekCString
+		\ ptr -> do
+			cstr <- c_keymap_layout_name ptr idx
+			name <- peekCString cstr
+			free cstr
+			return name
 
 
 -- FOREIGN CCALLS
