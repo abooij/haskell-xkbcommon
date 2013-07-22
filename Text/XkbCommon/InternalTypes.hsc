@@ -10,8 +10,10 @@ module Text.XkbCommon.InternalTypes
 
 	  readCString,
 
+	  CDirection(..), keyUp, keyDown,
+
 	  CLogLevel(..), CKeycode(..), CLayoutIndex(..), CModIndex(..), CLevelIndex(..),
-	  CLedIndex(..), CKeysym(..), CDirection(..), CStateComponent(..), CModMask(..),
+	  CLedIndex(..), CKeysym(..), CStateComponent(..), CModMask(..),
 	) where
 
 import Foreign
@@ -122,6 +124,7 @@ instance Storable CKeysym where
 
 -- newtype CCompileFlags = CCompileFlags #{type enum xkb_keymap_compile_flags} -- only one option, so disabled
 newtype CDirection = CDirection #{type enum xkb_key_direction}
+#{enum CDirection, CDirection, keyUp = XKB_KEY_UP, keyDown = XKB_KEY_DOWN}
 newtype CKeycode = CKeycode #{type xkb_keycode_t}
 -- newtype CKeymapFormat = CKeymapFormat #{type enum xkb_keymap_format} -- only one option, so disabled
 -- newtype CKeysymFlags = CKeysymFlags #{type enum xkb_keysym_flags} -- only one option, so disabled

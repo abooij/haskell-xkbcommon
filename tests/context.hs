@@ -3,9 +3,7 @@ import Control.Monad
 
 import Text.XkbCommon
 
-assert :: Bool -> String -> IO ()
-assert False str = ioError (userError str)
-assert _ _ = return ()
+import Common
 
 main = do
 	ctx <- liftM fromJust $ newContext pureFlags
