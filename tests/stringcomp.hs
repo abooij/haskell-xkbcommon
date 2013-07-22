@@ -5,12 +5,10 @@ import Text.XkbCommon
 
 import Common
 
-data_path = "keymaps/stringcomp.data"
-
 main = do
    ctx <- liftM fromJust $ newContext defaultFlags
 
-   original <- readFile ("data/"++data_path)
+   original <- readFile (datadir++"keymaps/stringcomp.data")
 
    let keymap = newKeymapFromString ctx original
    do case keymap of
