@@ -26,6 +26,7 @@ newKeymapFromNames ctx rmlvo = withContext ctx $ \ ptr -> do
 
 -- create keymap from string buffer instead of loading from disk
 -- immutable but creation can fail. not IO because it just parses a string.
+-- NOTE this can actually be an IO operation when compilation fails!
 newKeymapFromString :: Context -> String -> Maybe Keymap
 newKeymapFromString ctx buf = S.unsafePerformIO $ withCString buf $ \ cstr -> withContext ctx $ \ ptr -> do
 	k <- c_keymap_from_string ptr cstr #{const XKB_KEYMAP_FORMAT_TEXT_V1} #{const XKB_MAP_COMPILE_PLACEHOLDER }
