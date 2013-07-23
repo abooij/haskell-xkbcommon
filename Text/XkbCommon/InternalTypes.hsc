@@ -1,20 +1,20 @@
 {-# LANGUAGE CPP, EmptyDataDecls #-}
 module Text.XkbCommon.InternalTypes
-	( Context, CContext, InternalContext, toContext, fromContext, withContext,
-	  ContextFlags, noDefaultIncludes, noEnvironmentNames, defaultFlags,
-	  pureFlags,
+   ( Context, CContext, InternalContext, toContext, fromContext, withContext,
+     ContextFlags, noDefaultIncludes, noEnvironmentNames, defaultFlags,
+     pureFlags,
 
-	  Keymap, CKeymap, InternalKeymap, toKeymap, fromKeymap, withKeymap, RMLVO(..),
+     Keymap, CKeymap, InternalKeymap, toKeymap, fromKeymap, withKeymap, RMLVO(..),
 
-	  KeymapState, CKeymapState, toKeymapState, fromKeymapState, withKeymapState,
+     KeymapState, CKeymapState, toKeymapState, fromKeymapState, withKeymapState,
 
-	  readCString,
+     readCString,
 
-	  CDirection(..), keyUp, keyDown,
+     CDirection(..), keyUp, keyDown,
 
-	  CLogLevel(..), CKeycode(..), CLayoutIndex(..), CModIndex(..), CLevelIndex(..),
-	  CLedIndex(..), CKeysym(..), CStateComponent(..), CModMask(..),
-	) where
+     CLogLevel(..), CKeycode(..), CLayoutIndex(..), CModIndex(..), CLevelIndex(..),
+     CLedIndex(..), CKeysym(..), CStateComponent(..), CModMask(..),
+   ) where
 
 import Foreign
 import Foreign.C
@@ -38,9 +38,9 @@ withContext = withForeignPtr . fromContext
 
 -- Option flags for context creation
 data ContextFlags = ContextFlags
-	{ noDefaultIncludes :: Bool
-	, noEnvironmentNames :: Bool
-	} deriving (Eq, Show)
+   { noDefaultIncludes :: Bool
+   , noEnvironmentNames :: Bool
+   } deriving (Eq, Show)
 defaultFlags = ContextFlags { noDefaultIncludes = False, noEnvironmentNames = False }
 pureFlags = ContextFlags { noDefaultIncludes = True, noEnvironmentNames = True }
 
@@ -61,36 +61,36 @@ withKeymap = withForeignPtr . fromKeymap
 data RMLVO = RMLVO {rules, model, layout, variant, options :: Maybe String}
 noPrefs = RMLVO { rules = Nothing
                 , model = Nothing
-					 , layout = Nothing
-					 , variant = Nothing
-					 , options = Nothing
-					 }
+                , layout = Nothing
+                , variant = Nothing
+                , options = Nothing
+                }
 
 wrapCString :: CString -> IO (Maybe String)
 wrapCString x = if x == nullPtr
-	then return Nothing
-	else do
-		k <- peekCString x
-		return $ Just k
+   then return Nothing
+   else do
+      k <- peekCString x
+      return $ Just k
 wrapString :: Maybe String -> IO CString
 wrapString Nothing = return nullPtr
 wrapString (Just str) = newCString str
 instance Storable RMLVO where
-	sizeOf _ = #{size struct xkb_rule_names}
-	alignment _ = alignment (undefined :: CInt)
+   sizeOf _ = #{size struct xkb_rule_names}
+   alignment _ = alignment (undefined :: CInt)
 
-	poke p rmlvo = do
-		wrapString (rules rmlvo) >>= #{poke struct xkb_rule_names, rules} p
-		wrapString (model rmlvo) >>= #{poke struct xkb_rule_names, model} p
-		wrapString (layout rmlvo) >>= #{poke struct xkb_rule_names, layout} p
-		wrapString (variant rmlvo) >>= #{poke struct xkb_rule_names, variant} p
-		wrapString (options rmlvo) >>= #{poke struct xkb_rule_names, options} p
-	peek p = return RMLVO
-		`ap` (#{peek struct xkb_rule_names, rules} p >>= wrapCString)
-		`ap` (#{peek struct xkb_rule_names, model} p >>= wrapCString)
-		`ap` (#{peek struct xkb_rule_names, layout} p >>= wrapCString)
-		`ap` (#{peek struct xkb_rule_names, variant} p >>= wrapCString)
-		`ap` (#{peek struct xkb_rule_names, options} p >>= wrapCString)
+   poke p rmlvo = do
+      wrapString (rules rmlvo) >>= #{poke struct xkb_rule_names, rules} p
+      wrapString (model rmlvo) >>= #{poke struct xkb_rule_names, model} p
+      wrapString (layout rmlvo) >>= #{poke struct xkb_rule_names, layout} p
+      wrapString (variant rmlvo) >>= #{poke struct xkb_rule_names, variant} p
+      wrapString (options rmlvo) >>= #{poke struct xkb_rule_names, options} p
+   peek p = return RMLVO
+      `ap` (#{peek struct xkb_rule_names, rules} p >>= wrapCString)
+      `ap` (#{peek struct xkb_rule_names, model} p >>= wrapCString)
+      `ap` (#{peek struct xkb_rule_names, layout} p >>= wrapCString)
+      `ap` (#{peek struct xkb_rule_names, variant} p >>= wrapCString)
+      `ap` (#{peek struct xkb_rule_names, options} p >>= wrapCString)
 
 
 -- KeymapState is struct xkb_state *
@@ -111,16 +111,16 @@ withKeymapState = withForeignPtr . fromKeymapState
 -- reads a C string obtained from the library and proceeds to free it
 readCString :: CString -> IO String
 readCString cstr = do
-	str <- peekCString cstr
-	free cstr
-	return str
+   str <- peekCString cstr
+   free cstr
+   return str
 
 newtype CKeysym = CKeysym {unCKeysym :: #{type xkb_keysym_t}}
 instance Storable CKeysym where
-	sizeOf = Store.sizeOf unCKeysym
-	alignment = Store.alignment unCKeysym
-	peek = Store.peek CKeysym
-	poke = Store.poke unCKeysym
+   sizeOf = Store.sizeOf unCKeysym
+   alignment = Store.alignment unCKeysym
+   peek = Store.peek CKeysym
+   poke = Store.poke unCKeysym
 
 -- newtype CCompileFlags = CCompileFlags #{type enum xkb_keymap_compile_flags} -- only one option, so disabled
 newtype CDirection = CDirection #{type enum xkb_key_direction}

@@ -1,5 +1,5 @@
 module Text.XkbCommon.ParseDefines
-	( readHeader, genKeysyms ) where
+   ( readHeader, genKeysyms ) where
 
 import Language.Haskell.TH
 import Language.Preprocessor.Cpphs
@@ -11,8 +11,8 @@ import Data.Text (pack, unpack, toLower)
 readHeader :: String -> IO (String,String)
 readHeader str = do
    cpp_out <- readProcess "cpp" [] ("#include<"++str++">")
-	--parse output:
-   let headerfile = read $ head $ map (!!2) $ map words $ filter (isInfixOf str) $ lines cpp_out
+   --parse output:
+   let headerfile = read $ head $ map ((!! 2) . words) (filter (isInfixOf str) $ lines cpp_out)
    header <- readFile headerfile
    return (headerfile,header)
 

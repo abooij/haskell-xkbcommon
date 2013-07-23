@@ -11,7 +11,7 @@ main = do
    original <- readFile (datadir++"keymaps/stringcomp.data")
 
    let keymap = newKeymapFromString ctx original
-   do case keymap of
+   case keymap of
 		Nothing -> assert False "Could not read keymap string!"
 		Just _ -> assert True undefined
 

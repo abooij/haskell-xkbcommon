@@ -4,7 +4,7 @@ module Text.XkbCommon.Types
      CLogLevel, CKeycode(..), CLayoutIndex(..), CModIndex(..), CLevelIndex(..),
      CLedIndex(..), CKeysym(..), CStateComponent(..), CModMask(..),
 
-	  module Text.XkbCommon.KeysymCodes
+     module Text.XkbCommon.KeysymCodes
    ) where
 
 import Text.XkbCommon.InternalTypes

@@ -7,7 +7,7 @@ import Text.XkbCommon
 
 import Common
 
-benchmark_iterations = 20000000
+benchmarkIterations = 20000000
 
 --updateHead :: a -> V.Vector a -> V.Vector a
 --updateHead a xs = a:V.tail xs
@@ -16,12 +16,10 @@ benchmark_iterations = 20000000
 update i a xs = xs // [(i,a)]
 
 bench :: KeymapState -> Int -> Vector Bool -> IO ()
-bench st n keys = if n == 0 then return () else do
+bench st n keys = unless (n == 0) $ do
    rand <- getStdRandom (randomR (9,255))
-   if keys V.! rand
-      then updateKeymapState st (CKeycode $ fromIntegral rand) keyUp
-      else updateKeymapState st (CKeycode $ fromIntegral rand) keyDown
-   --putStrLn $ show rand
+   updateKeymapState st (CKeycode $ fromIntegral rand)
+      (if keys ! rand then keyUp else keyDown)
    return =<< bench st (n-1) $ Main.update rand (not $ keys V.! rand) keys  -- keys // [(rand,(not $ keys V.! rand))]
 
 main = do
@@ -29,6 +27,6 @@ main = do
    km <- liftM fromJust $ newKeymapFromNames ctx (RMLVO (Just "evdev") (Just "pc104") (Just "us,ru,il,de") (Just ",,,neo") (Just "grp:menu_toggle"))
    st <- newKeymapState km
 
-   bench st benchmark_iterations (V.replicate 256 False)
+   bench st benchmarkIterations (V.replicate 256 False)
 
    return ()
