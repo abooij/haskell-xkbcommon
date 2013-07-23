@@ -5,6 +5,5 @@ module Text.XkbCommon.KeysymCodes where
 import Text.XkbCommon.ParseDefines
 import Language.Haskell.TH
 
-keysym=True
-
+-- TH magic from ParseDefines:
 $(runIO genKeysyms >>= return)

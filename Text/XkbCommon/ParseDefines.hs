@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Text.XkbCommon.ParseDefines
 	( readHeader, genKeysyms ) where
 
