@@ -20,5 +20,5 @@ genKeysyms :: IO [Dec]
 genKeysyms = do
    (filename,keysyms_header) <- readHeader "xkbcommon/xkbcommon-keysyms.h"
    (_,defs) <- macroPassReturningSymTab [] defaultBoolOptions [(newfile filename,keysyms_header)]
-   return $ map (\ (name, val) -> ValD (VarP $ mkName ("xkb_key"++drop 7 name)) (NormalB (LitE (IntegerL (read val)))) []) $ filter ((/="").snd) defs
+   return $ map (\ (name, val) -> ValD (VarP $ mkName ("xkb_key"++drop 7 name)) (NormalB (AppE (ConE $ mkName "CKeysym") $ LitE (IntegerL (read val)))) []) $ filter ((/="").snd) defs
 
