@@ -16,16 +16,18 @@ cabal-version:       >=1.8
 
 library
   exposed-modules:
-    Text.XkbCommon,
+    Text.XkbCommon
+  other-modules:
     Text.XkbCommon.Types,
     Text.XkbCommon.Context,
     Text.XkbCommon.Keymap,
     Text.XkbCommon.KeymapState,
-    Text.XkbCommon.Keysym
-  other-modules:
+    Text.XkbCommon.Keysym,
+    Text.XkbCommon.KeysymCodes,
+    Text.XkbCommon.ParseDefines,
     Text.XkbCommon.InternalTypes
   -- other-modules:
-  build-depends:       base ==4.6.*, transformers, storable-record
+  build-depends:       base ==4.6.*, transformers, storable-record, process, cpphs, template-haskell, text
   -- build-tools:         c2hs
 
 
