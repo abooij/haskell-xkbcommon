@@ -1,10 +1,11 @@
 module Text.XkbCommon.ParseDefines
-   ( readHeader, genKeysyms ) where
+   ( readHeader, genKeysyms, genKeycodes ) where
 
 import Language.Haskell.TH
 import Language.Preprocessor.Cpphs
 import System.Process
 import Data.List
+import Data.Maybe (isJust)
 import Data.Text (pack, unpack, toLower)
 
 -- this function calls the c preprocessor to find out what the full path to a header file is.
@@ -25,3 +26,17 @@ genKeysyms = do
    let parsed_defs = map (\ (name, val) -> (drop 7 name, read val)) filtered_defs
    return $ map (\ (name, val) -> ValD (VarP $ mkName ("xkb_key"++name)) (NormalB (AppE (ConE $ mkName "CKeysym") $ LitE (IntegerL val))) []) parsed_defs
 
+genKeycodes :: IO [Dec]
+-- genKeycodes = return []
+genKeycodes = do
+   (filename,keysyms_header) <- readHeader "linux/input.h"
+   (_,defs) <- macroPassReturningSymTab [] defaultBoolOptions [(newfile filename,keysyms_header)]
+   let exclude_defs = []
+   let filtered_defs = filter (\ (name,val) -> isPrefixOf "KEY_" name && notElem name exclude_defs && (isJust $ (maybeRead val :: Maybe Int))) defs
+   let parsed_defs = map (\ (name, val) -> (drop 3 name, read val)) filtered_defs
+   return $ map (\ (name, val) -> ValD (VarP $ mkName ("evdev_key"++name)) (NormalB (AppE (ConE $ mkName "CKeycode") $ LitE (IntegerL val))) []) parsed_defs
+
+maybeRead :: Read a => String -> Maybe a
+maybeRead s = case reads s of
+   [(x, "")] -> Just x
+   _         -> Nothing

@@ -23,7 +23,8 @@ library
     Text.XkbCommon.Keymap,
     Text.XkbCommon.KeymapState,
     Text.XkbCommon.Keysym,
-    Text.XkbCommon.KeysymCodes,
+    Text.XkbCommon.KeysymList,
+    Text.XkbCommon.KeycodeList,
     Text.XkbCommon.ParseDefines,
     Text.XkbCommon.InternalTypes
   -- other-modules:
