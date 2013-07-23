@@ -26,9 +26,13 @@ updateKeymapState :: KeymapState -> CKeycode -> CDirection -> IO CStateComponent
 updateKeymapState st key dir = withKeymapState st $
       \ ptr -> c_update_key_state ptr key dir
 
-getOneKeySym :: KeymapState -> CKeycode -> IO CKeysym
+getOneKeySym :: KeymapState -> CKeycode -> IO (Maybe CKeysym)
 getOneKeySym st key = withKeymapState st $
-      \ ptr -> c_get_one_key_sym ptr key
+      \ ptr -> do
+         ks <- c_get_one_key_sym ptr key
+         return $ if unCKeysym ks == 0
+                     then Nothing
+                     else Just ks
 
 -- TODO TEST TEST TEST I HAVE NO IDEA IF THIS WORKS!!!
 -- Get the keysyms obtained from pressing a particular key in a given keyboard state.
