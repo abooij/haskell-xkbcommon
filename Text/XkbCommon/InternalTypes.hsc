@@ -115,17 +115,23 @@ readCString cstr = do
    free cstr
    return str
 
-newtype CKeysym = CKeysym {unCKeysym :: #{type xkb_keysym_t}}
+newtype CKeysym = CKeysym {unCKeysym :: #{type xkb_keysym_t}} deriving(Show, Eq)
 instance Storable CKeysym where
    sizeOf = Store.sizeOf unCKeysym
    alignment = Store.alignment unCKeysym
    peek = Store.peek CKeysym
    poke = Store.poke unCKeysym
 
+newtype CKeycode = CKeycode {unCKeycode :: #{type xkb_keycode_t}} deriving(Show, Eq)
+instance Storable CKeycode where
+   sizeOf = Store.sizeOf unCKeycode
+   alignment = Store.alignment unCKeycode
+   peek = Store.peek CKeycode
+   poke = Store.poke unCKeycode
+
 -- newtype CCompileFlags = CCompileFlags #{type enum xkb_keymap_compile_flags} -- only one option, so disabled
 newtype CDirection = CDirection #{type enum xkb_key_direction}
 #{enum CDirection, CDirection, keyUp = XKB_KEY_UP, keyDown = XKB_KEY_DOWN}
-newtype CKeycode = CKeycode #{type xkb_keycode_t}
 -- newtype CKeymapFormat = CKeymapFormat #{type enum xkb_keymap_format} -- only one option, so disabled
 -- newtype CKeysymFlags = CKeysymFlags #{type enum xkb_keysym_flags} -- only one option, so disabled
 newtype CLayoutIndex = CLayoutIndex #{type xkb_layout_index_t}
