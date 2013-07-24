@@ -233,6 +233,9 @@ main = do
       (keycode_rightalt,    Up,    keysym_ISO_Level5_Shift),
       (keycode_v,           Both,    keysym_p)]
    return ()
+
+-- TODO translate the rest below...
+
 {-
     xkb_keymap_unref(keymap);
     assert(ctx);
