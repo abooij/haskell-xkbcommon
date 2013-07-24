@@ -56,6 +56,14 @@ Test-Suite filecomp
   build-depends : base, xkbcommon
   extra-libraries: xkbcommon
 
+Test-Suite keyseq
+  type: exitcode-stdio-1.0
+  hs-source-dirs: tests
+  other-modules: Common
+  main-is: keyseq.hs
+  build-depends : base, xkbcommon
+  extra-libraries: xkbcommon
+
 Test-Suite stringcomp
   type: exitcode-stdio-1.0
   hs-source-dirs: tests

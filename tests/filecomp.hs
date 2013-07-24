@@ -16,7 +16,7 @@ testFile ctx path shouldwork = do
    assert (shouldwork `xor` isNothing keymap) "file load failure"
 
 main = do
-   ctx <- fromJust <$> newContext defaultFlags
+   ctx <- getTestContext
    mapM_ (\ path -> testFile ctx path True) [
 	  "keymaps/basic.xkb",
 	  "keymaps/comprehensive-plus-geom.xkb",

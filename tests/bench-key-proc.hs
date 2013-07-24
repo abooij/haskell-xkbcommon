@@ -23,7 +23,7 @@ bench st n keys = unless (n == 0) $ do
    return =<< bench st (n-1) $ Main.update rand (not $ keys V.! rand) keys  -- keys // [(rand,(not $ keys V.! rand))]
 
 main = do
-   ctx <- liftM fromJust $ newContext defaultFlags
+   ctx <- getTestContext
    km <- liftM fromJust $ newKeymapFromNames ctx (RMLVO (Just "evdev") (Just "pc104") (Just "us,ru,il,de") (Just ",,,neo") (Just "grp:menu_toggle"))
    st <- newKeymapState km
 

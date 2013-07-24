@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.KeymapState
-   ( KeymapState(..), newKeymapState, updateKeymapState, getOneKeySym,
+   ( KeymapState(..), newKeymapState, updateKeymapState, getOneKeySym, getStateSyms
    ) where
 
 import Foreign
@@ -44,7 +44,8 @@ getStateSyms ks key = withKeymapState ks $ \ ptr -> do
    num_out <- c_state_get_syms ptr key in_ptr
    deref_ptr <- peek in_ptr
    out_list <- peekArray (fromIntegral num_out) deref_ptr
-   free deref_ptr >> free in_ptr >> free init_ptr
+   --free deref_ptr >> free in_ptr >> free init_ptr
+   free in_ptr >> free init_ptr
    return out_list
 
 -- Get the effective layout index for a key in a given keyboard state.
