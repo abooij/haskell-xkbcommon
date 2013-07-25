@@ -11,7 +11,6 @@ testKeySeq km tests = do
    st <- newKeymapState km
    return =<< mapM (testOne st) (zip tests [1..]) where
       testOne st ((kc, dir, ks),n) = do
-         -- todo xkb_state_key_get_syms
          syms <- getStateSyms st kc
 
          when (dir == Down || dir == Both) $ updateKeymapState st kc keyDown >> return ()
@@ -20,9 +19,14 @@ testKeySeq km tests = do
          -- in this test, we always get exactly one keysym
          assert (length syms == 1) "did not get right amount of keysyms"
 
-         assert (head syms == ks) ("did not get correct keysym "++show ks++" for keycode "++show kc++", got "++(show$head syms)++" in test "++show n)
+         assert (head syms == ks) ("did not get correct keysym " ++ show ks
+                                   ++ " for keycode " ++ show kc
+                                   ++ ", got " ++ (show$head syms)
+                                   ++ " in test " ++ show n)
 
          -- TODO assert keysym names are equal
+         assert (keysymName (head syms) == keysymName ks) ("keysym names differ: " ++ keysymName (head syms) ++ " and " ++ keysymName ks)
+         putStrLn $ keysymName ks
          return ()
 
 

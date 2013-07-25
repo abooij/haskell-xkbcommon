@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.Keysym
-   ( keysymFromName
+   ( keysymFromName, keysymName
    ) where
 
 import Foreign
@@ -16,16 +16,19 @@ import Text.XkbCommon.InternalTypes
 
 keysymFromName :: String -> CKeysym
 keysymFromName str = S.unsafePerformIO $ withCString str $ \ cstr ->
-   c_keysym_from_name cstr #{const XKB_KEYSYM_CASE_INSENSITIVE}
+   c_keysym_from_name cstr 0 -- 0 means search case sensitive. alternative is #{const XKB_KEYSYM_CASE_INSENSITIVE}
 
-{-
+-- get string representation of a keysym
 keysymName :: CKeysym -> String
-keysymName = unsafePerformIO $ do
+keysymName ks = S.unsafePerformIO $ do
    -- build 64-byte buffer and pass
-   withCString (repeat 64 ' ')
--}
+   let buflen = 64
+   str <- withCString (replicate buflen ' ') $ \ cstr -> do
+      len <- c_keysym_name ks cstr (fromIntegral buflen)
+      return =<< peekCString cstr
+   return str
 
--- below functions aren't bound yet.
+
 
 -- int    xkb_keysym_get_name (xkb_keysym_t keysym, char *buffer, size_t size)
 --     Get the name of a keysym.
@@ -37,6 +40,8 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_keysym_get_name"
 -- second argument is always XKB_KEYSYM_CASE_INSENSITIVE
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_keysym_from_name"
    c_keysym_from_name :: CString -> CInt -> IO CKeysym
+
+-- below functions aren't bound yet.
 
 -- int    xkb_keysym_to_utf8 (xkb_keysym_t keysym, char *buffer, size_t size)
 --     Get the Unicode/UTF-8 representation of a keysym.
