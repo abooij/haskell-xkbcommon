@@ -24,7 +24,7 @@ testKeySeq km tests = do
                                    ++ ", got " ++ (show$head syms)
                                    ++ " in test " ++ show n)
 
-         -- TODO assert keysym names are equal
+         -- this probably doesn't do anything since if we came this far, head syms == ks
          assert (keysymName (head syms) == keysymName ks) ("keysym names differ: " ++ keysymName (head syms) ++ " and " ++ keysymName ks)
          putStrLn $ keysymName ks
          return ()
@@ -236,107 +236,95 @@ main = do
       (keycode_esc,         Both,  keysym_Escape),
       (keycode_rightalt,    Up,    keysym_ISO_Level5_Shift),
       (keycode_v,           Both,    keysym_p)]
+
+   km2 <- liftM fromJust $ newKeymapFromNames ctx (RMLVO
+               (Just "evdev")
+               (Just "")
+               (Just "us,il,ru")
+               (Just "")
+               (Just "grp:alt_shift_toggle_bidir,grp:menu_toggle"))
+
+   testKeySeq km2 [
+      (keycode_leftshift, Down, keysym_Shift_L),
+      (keycode_leftalt,   Down, keysym_ISO_Prev_Group),
+      (keycode_leftalt,   Up,   keysym_ISO_Prev_Group),
+      (keycode_leftshift, Up,   keysym_Shift_L)]
+
+   testKeySeq km2 [
+      (keycode_leftalt,   Down, keysym_Alt_L),
+      (keycode_leftshift, Down, keysym_ISO_Prev_Group),
+      (keycode_leftshift, Up,   keysym_ISO_Prev_Group),
+      (keycode_leftalt,   Up,   keysym_Alt_L)]
+
+   testKeySeq km2 [
+      (keycode_h,         Both, keysym_h),
+      (keycode_compose,   Both, keysym_ISO_Next_Group),
+      (keycode_h,         Both, keysym_hebrew_yod),
+      (keycode_compose,   Both, keysym_ISO_Next_Group),
+      (keycode_h,         Both, keysym_Cyrillic_er),
+      (keycode_leftshift, Down, keysym_Shift_L),
+      (keycode_leftalt,   Both, keysym_ISO_Prev_Group),
+      (keycode_leftshift, Up,   keysym_Shift_L),
+      (keycode_h,         Both, keysym_hebrew_yod),
+      (keycode_leftshift, Down, keysym_Shift_L),
+      (keycode_leftalt,   Both, keysym_ISO_Prev_Group),
+      (keycode_leftshift, Up,   keysym_Shift_L),
+      (keycode_h,         Both, keysym_h),
+      (keycode_leftshift, Down, keysym_Shift_L),
+      (keycode_leftalt,   Both, keysym_ISO_Prev_Group),
+      (keycode_leftshift, Up,   keysym_Shift_L),
+      (keycode_h,         Both, keysym_Cyrillic_er),
+      (keycode_compose,   Both, keysym_ISO_Next_Group),
+      (keycode_h,         Both, keysym_h)]
+
+   km3 <- liftM fromJust $ newKeymapFromNames ctx (RMLVO
+               (Just "evdev")
+               (Just "")
+               (Just "us,il,ru")
+               (Just "")
+               (Just "grp:switch,grp:lswitch,grp:menu_toggle"))
+
+   testKeySeq km3 [
+      (keycode_h,         Both, keysym_h),
+      (keycode_rightalt,  Down, keysym_Mode_switch),
+      (keycode_h,         Both, keysym_hebrew_yod),
+      (keycode_rightalt,  Up,   keysym_ISO_Level3_Shift),
+      (keycode_h,         Both, keysym_h),
+      (keycode_rightalt,  Down, keysym_Mode_switch),
+      (keycode_h,         Both, keysym_hebrew_yod),
+      (keycode_rightalt,  Up,   keysym_ISO_Level3_Shift),
+      (keycode_h,         Both, keysym_h)]
+
+   testKeySeq km3 [
+      (keycode_h,         Both, keysym_h),
+      (keycode_compose,   Both, keysym_ISO_Next_Group),
+      (keycode_leftalt,   Down, keysym_Mode_switch),
+      (keycode_h,         Both, keysym_Cyrillic_er),
+      (keycode_leftalt,   Up,   keysym_Mode_switch),
+      (keycode_h,         Both, keysym_hebrew_yod),
+      (keycode_compose,   Both, keysym_ISO_Next_Group),
+      (keycode_leftalt,   Down, keysym_Mode_switch),
+      (keycode_h,         Both, keysym_h),
+      (keycode_leftalt,   Up,   keysym_Mode_switch),
+      (keycode_h,         Both, keysym_Cyrillic_er),
+      (keycode_compose,   Both, keysym_ISO_Next_Group),
+      (keycode_h,         Both, keysym_h),
+      (keycode_rightalt,  Down, keysym_Mode_switch),
+      (keycode_h,         Both, keysym_hebrew_yod),
+      (keycode_leftalt,   Down, keysym_Mode_switch),
+      (keycode_h,         Both, keysym_Cyrillic_er),
+      (keycode_leftalt,   Up,   keysym_Mode_switch),
+      (keycode_h,         Both, keysym_hebrew_yod),
+      (keycode_rightalt,  Up,   keysym_ISO_Level3_Shift),
+      (keycode_h,         Both, keysym_h)]
+
+   kmFile <- readFile (datadir++"keymaps/unbound-vmod.xkb")
+   let km4 = fromJust $ newKeymapFromString ctx kmFile
+
+   testKeySeq km4 [
+      (keycode_h,         Both, keysym_h),
+      (keycode_z,         Both, keysym_y),
+      (keycode_minus,     Both, keysym_ssharp),
+      (keycode_z,         Both, keysym_y)]
+
    return ()
-
--- TODO translate the rest below...
-
-{-
-    xkb_keymap_unref(keymap);
-    assert(ctx);
-    keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
-                                "grp:alt_shift_toggle_bidir,grp:menu_toggle");
-    assert(keymap);
-
-    assert(test_key_seq(keymap,
-                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
-                        KEY_LEFTALT,   DOWN, XKB_KEY_ISO_Prev_Group, NEXT,
-                        KEY_LEFTALT,   UP,   XKB_KEY_ISO_Prev_Group, NEXT,
-                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        FINISH));
-
-    assert(test_key_seq(keymap,
-                        KEY_LEFTALT,   DOWN, XKB_KEY_Alt_L,          NEXT,
-                        KEY_LEFTSHIFT, DOWN, XKB_KEY_ISO_Prev_Group, NEXT,
-                        KEY_LEFTSHIFT, UP,   XKB_KEY_ISO_Prev_Group, NEXT,
-                        KEY_LEFTALT,   UP,   XKB_KEY_Alt_L,          FINISH));
-
-    /* Check backwards (negative) group switching and wrapping. */
-    assert(test_key_seq(keymap,
-                        KEY_H,         BOTH, XKB_KEY_h,              NEXT,
-                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
-                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,     NEXT,
-                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
-                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,    NEXT,
-                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
-                        KEY_LEFTALT,   BOTH, XKB_KEY_ISO_Prev_Group, NEXT,
-                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        NEXT,
-                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,     NEXT,
-                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
-                        KEY_LEFTALT,   BOTH, XKB_KEY_ISO_Prev_Group, NEXT,
-                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        NEXT,
-                        KEY_H,         BOTH, XKB_KEY_h,              NEXT,
-                        KEY_LEFTSHIFT, DOWN, XKB_KEY_Shift_L,        NEXT,
-                        KEY_LEFTALT,   BOTH, XKB_KEY_ISO_Prev_Group, NEXT,
-                        KEY_LEFTSHIFT, UP,   XKB_KEY_Shift_L,        NEXT,
-                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,    NEXT,
-                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group, NEXT,
-                        KEY_H,         BOTH, XKB_KEY_h,              FINISH));
-
-    xkb_keymap_unref(keymap);
-    keymap = test_compile_rules(ctx, "evdev", "", "us,il,ru", "",
-                                "grp:switch,grp:lswitch,grp:menu_toggle");
-    assert(keymap);
-
-    /* Test depressed group works (Mode_switch). */
-    assert(test_key_seq(keymap,
-                        KEY_H,         BOTH, XKB_KEY_h,                 NEXT,
-                        KEY_RIGHTALT,  DOWN, XKB_KEY_Mode_switch,       NEXT,
-                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,        NEXT,
-                        KEY_RIGHTALT,  UP,   XKB_KEY_ISO_Level3_Shift,  NEXT,
-                        KEY_H,         BOTH, XKB_KEY_h,                 NEXT,
-                        KEY_RIGHTALT,  DOWN, XKB_KEY_Mode_switch,       NEXT,
-                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,        NEXT,
-                        KEY_RIGHTALT,  UP,   XKB_KEY_ISO_Level3_Shift,  NEXT,
-                        KEY_H,         BOTH, XKB_KEY_h,                 FINISH));
-
-    /* Test locked+depressed group works, with wrapping and accumulation. */
-    assert(test_key_seq(keymap,
-                        KEY_H,         BOTH, XKB_KEY_h,                 NEXT,
-                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group,    NEXT,
-                        KEY_LEFTALT,   DOWN, XKB_KEY_Mode_switch,       NEXT,
-                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,       NEXT,
-                        KEY_LEFTALT,   UP,   XKB_KEY_Mode_switch,       NEXT,
-                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,        NEXT,
-                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group,    NEXT,
-                        KEY_LEFTALT,   DOWN, XKB_KEY_Mode_switch,       NEXT,
-                        /* Should wrap back to first group. */
-                        KEY_H,         BOTH, XKB_KEY_h,                 NEXT,
-                        KEY_LEFTALT,   UP,   XKB_KEY_Mode_switch,       NEXT,
-                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,       NEXT,
-                        KEY_COMPOSE,   BOTH, XKB_KEY_ISO_Next_Group,    NEXT,
-                        KEY_H,         BOTH, XKB_KEY_h,                 NEXT,
-                        /* Two SetGroup(+1)'s should add up. */
-                        KEY_RIGHTALT,  DOWN, XKB_KEY_Mode_switch,       NEXT,
-                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,        NEXT,
-                        KEY_LEFTALT,   DOWN, XKB_KEY_Mode_switch,       NEXT,
-                        KEY_H,         BOTH, XKB_KEY_Cyrillic_er,       NEXT,
-                        KEY_LEFTALT,   UP,   XKB_KEY_Mode_switch,       NEXT,
-                        KEY_H,         BOTH, XKB_KEY_hebrew_yod,        NEXT,
-                        KEY_RIGHTALT,  UP,   XKB_KEY_ISO_Level3_Shift,  NEXT,
-                        KEY_H,         BOTH, XKB_KEY_h,                 FINISH));
-
-    xkb_keymap_unref(keymap);
-    keymap = test_compile_file(ctx, "keymaps/unbound-vmod.xkb");
-    assert(keymap);
-
-    assert(test_key_seq(keymap,
-                        KEY_H,         BOTH, XKB_KEY_h,                 NEXT,
-                        KEY_Z,         BOTH, XKB_KEY_y,                 NEXT,
-                        KEY_MINUS,     BOTH, XKB_KEY_ssharp,            NEXT,
-                        KEY_Z,         BOTH, XKB_KEY_y,                 FINISH));
-
-    xkb_keymap_unref(keymap);
-    xkb_context_unref(ctx);
-    return 0;
-}
-
--}
