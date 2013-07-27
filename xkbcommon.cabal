@@ -28,7 +28,7 @@ library
     Text.XkbCommon.ParseDefines,
     Text.XkbCommon.InternalTypes
   -- other-modules:
-  build-depends:       base ==4.6.*, transformers, storable-record, process, cpphs, template-haskell, text
+  build-depends:       base ==4.6.*, transformers, storable-record, process, cpphs, template-haskell, text, glib, bytestring
   -- build-tools:         c2hs
 
 
@@ -61,6 +61,14 @@ Test-Suite keyseq
   hs-source-dirs: tests
   other-modules: Common
   main-is: keyseq.hs
+  build-depends : base, xkbcommon
+  extra-libraries: xkbcommon
+
+Test-Suite keysym
+  type: exitcode-stdio-1.0
+  hs-source-dirs: tests
+  other-modules: Common
+  main-is: keysym.hs
   build-depends : base, xkbcommon
   extra-libraries: xkbcommon
 

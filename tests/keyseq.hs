@@ -6,7 +6,7 @@ import Common
 
 data Direction = Down | Up | Both | Repeat deriving (Show, Eq)
 
-testKeySeq :: Keymap -> [(CKeycode, Direction, CKeysym)] -> IO [()]
+testKeySeq :: Keymap -> [(CKeycode, Direction, Keysym)] -> IO [()]
 testKeySeq km tests = do
    st <- newKeymapState km
    return =<< mapM (testOne st) (zip tests [1..]) where
@@ -30,7 +30,7 @@ testKeySeq km tests = do
          return ()
 
 
-ks = keysymFromName
+ks = fromJust.keysymFromName
 
 main = do
    ctx <- getTestContext

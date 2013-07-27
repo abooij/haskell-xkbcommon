@@ -12,8 +12,10 @@ module Text.XkbCommon.InternalTypes
 
      CDirection(..), keyUp, keyDown,
 
+     CKeysym(..), Keysym(..), toKeysym, fromKeysym, safeToKeysym,
+
      CLogLevel(..), CKeycode(..), CLayoutIndex(..), CModIndex(..), CLevelIndex(..),
-     CLedIndex(..), CKeysym(..), CStateComponent(..), CModMask(..),
+     CLedIndex(..), CStateComponent(..), CModMask(..),
    ) where
 
 import Foreign
@@ -121,6 +123,15 @@ instance Storable CKeysym where
    alignment = Store.alignment unCKeysym
    peek = Store.peek CKeysym
    poke = Store.poke unCKeysym
+newtype Keysym = Keysym Int deriving(Show, Eq)
+fromKeysym :: Keysym -> CKeysym
+fromKeysym (Keysym k) = CKeysym (fromIntegral k)
+toKeysym :: CKeysym -> Keysym
+toKeysym (CKeysym 0) = error "Keysym must be nonzero!"
+toKeysym (CKeysym k) = Keysym (fromIntegral k)
+safeToKeysym :: CKeysym -> Maybe Keysym
+safeToKeysym (CKeysym 0) = Nothing
+safeToKeysym (CKeysym n) = Just (Keysym (fromIntegral n))
 
 newtype CKeycode = CKeycode {unCKeycode :: #{type xkb_keycode_t}} deriving(Show, Eq)
 instance Storable CKeycode where
@@ -128,6 +139,14 @@ instance Storable CKeycode where
    alignment = Store.alignment unCKeycode
    peek = Store.peek CKeycode
    poke = Store.poke unCKeycode
+-- not sure if the below is useful... commented out until it is.
+-- fromKeycode :: Keycode -> CKeycode
+-- fromKeycode (Keycode k) = CKeycode k
+-- toKeycode :: CKeycode -> Keycode
+-- toKeycode (CKeycode 0) = error "Keycode must be nonzero!"
+-- safeToKeycode :: CKeycode -> Maybe Keycode
+-- safeToKeycode (CKeycode 0) = Nothing
+-- safeToKeycode (CKeycode n) = Just (Keycode n)
 
 -- newtype CCompileFlags = CCompileFlags #{type enum xkb_keymap_compile_flags} -- only one option, so disabled
 newtype CDirection = CDirection #{type enum xkb_key_direction}

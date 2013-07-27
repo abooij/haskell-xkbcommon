@@ -25,7 +25,7 @@ genKeysyms = do
    let exclude_defs = ["XKB_KEY_VoidSymbol", "XKB_KEY_NoSymbol"]
    let filtered_defs = filter (\ (name,val) -> isPrefixOf "XKB_KEY" name && notElem name exclude_defs) defs
    let parsed_defs = map (drop 8 *** read) filtered_defs
-   return $ map (\ (name, val) -> ValD (VarP $ mkName ("keysym_"++name)) (NormalB (AppE (ConE $ mkName "CKeysym") $ LitE (IntegerL val))) []) parsed_defs
+   return $ map (\ (name, val) -> ValD (VarP $ mkName ("keysym_"++name)) (NormalB (AppE (VarE $ mkName "toKeysym") $ (AppE (ConE $ mkName "CKeysym") $ LitE (IntegerL val)))) []) parsed_defs
 
 genKeycodes :: IO [Dec]
 -- genKeycodes = return []

@@ -8,6 +8,7 @@ import Foreign
 import Foreign.C
 import Foreign.Storable
 import Data.Functor
+import Data.Maybe (catMaybes)
 
 import Text.XkbCommon.InternalTypes
 
@@ -26,18 +27,16 @@ updateKeymapState :: KeymapState -> CKeycode -> CDirection -> IO CStateComponent
 updateKeymapState st key dir = withKeymapState st $
       \ ptr -> c_update_key_state ptr key dir
 
-getOneKeySym :: KeymapState -> CKeycode -> IO (Maybe CKeysym)
+getOneKeySym :: KeymapState -> CKeycode -> IO (Maybe Keysym)
 getOneKeySym st key = withKeymapState st $
       \ ptr -> do
          ks <- c_get_one_key_sym ptr key
-         return $ if unCKeysym ks == 0
-                     then Nothing
-                     else Just ks
+         return $ safeToKeysym ks
 
 -- TODO TEST TEST TEST I HAVE NO IDEA IF THIS WORKS!!!
 -- Get the keysyms obtained from pressing a particular key in a given keyboard state.
 -- c_state_get_syms :: Ptr CKeymapState -> CKeycode -> Ptr (Ptr CKeysym) -> IO CInt
-getStateSyms :: KeymapState -> CKeycode -> IO [CKeysym]
+getStateSyms :: KeymapState -> CKeycode -> IO [Keysym]
 getStateSyms ks key = withKeymapState ks $ \ ptr -> do
    init_ptr <- newArray [] :: IO (Ptr CKeysym)
    in_ptr <- new init_ptr
@@ -46,7 +45,7 @@ getStateSyms ks key = withKeymapState ks $ \ ptr -> do
    out_list <- peekArray (fromIntegral num_out) deref_ptr
    --free deref_ptr >> free in_ptr >> free init_ptr
    free in_ptr >> free init_ptr
-   return out_list
+   return $ catMaybes $ map safeToKeysym out_list
 
 -- Get the effective layout index for a key in a given keyboard state.
 -- c_get_layout :: Ptr CKeymapState -> CKeycode -> IO CLayoutIndex
