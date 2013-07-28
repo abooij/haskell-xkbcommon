@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.Context
-   ( Context(..), ContextFlags, defaultFlags, pureFlags, newContext,
+   ( Context(..), ContextFlags(..), defaultFlags, pureFlags, newContext,
      appendIncludePath, numIncludePaths, clearIncludePath, appendDefaultIncludePath,
      includePathShow,
    ) where
@@ -67,8 +67,8 @@ type CContextFlags = #type int
 
 translateContextFlags :: ContextFlags -> CContextFlags
 translateContextFlags x = j + k where
-   j = if noDefaultIncludes x then noEnvNamFlags else 0
-   k = if noEnvironmentNames x then noDefIncFlags else 0
+   j = if noDefaultIncludes x then noDefIncFlags else 0
+   k = if noEnvironmentNames x then noEnvNamFlags else 0
 
 
 

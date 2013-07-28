@@ -31,14 +31,14 @@ library
   build-depends:       base ==4.6.*, transformers, storable-record, process, cpphs, template-haskell, text, glib, bytestring
   -- build-tools:         c2hs
 
-
-Test-Suite bench-key-proc
-  type: exitcode-stdio-1.0
-  hs-source-dirs: tests
-  other-modules: Common
-  main-is: bench-key-proc.hs
-  build-depends : base, xkbcommon, random, vector
-  extra-libraries: xkbcommon
+-- this is actually not a test but a benchmark
+-- Test-Suite bench-key-proc
+--   type: exitcode-stdio-1.0
+--   hs-source-dirs: tests
+--   other-modules: Common
+--   main-is: bench-key-proc.hs
+--   build-depends : base, xkbcommon, random, vector
+--   extra-libraries: xkbcommon
 
 Test-Suite context
   type: exitcode-stdio-1.0
@@ -70,6 +70,14 @@ Test-Suite keysym
   other-modules: Common
   main-is: keysym.hs
   build-depends : base, xkbcommon
+  extra-libraries: xkbcommon
+
+Test-Suite rulescomp
+  type: exitcode-stdio-1.0
+  hs-source-dirs: tests
+  other-modules: Common
+  main-is: rulescomp.hs
+  build-depends : base, xkbcommon, unix
   extra-libraries: xkbcommon
 
 Test-Suite stringcomp

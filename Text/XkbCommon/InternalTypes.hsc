@@ -1,10 +1,10 @@
 {-# LANGUAGE CPP, EmptyDataDecls #-}
 module Text.XkbCommon.InternalTypes
    ( Context, CContext, InternalContext, toContext, fromContext, withContext,
-     ContextFlags, noDefaultIncludes, noEnvironmentNames, defaultFlags,
+     ContextFlags(..), defaultFlags,
      pureFlags,
 
-     Keymap, CKeymap, InternalKeymap, toKeymap, fromKeymap, withKeymap, RMLVO(..),
+     Keymap, CKeymap, InternalKeymap, toKeymap, fromKeymap, withKeymap, RMLVO(..), noPrefs,
 
      KeymapState, CKeymapState, toKeymapState, fromKeymapState, withKeymapState,
 
