@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.KeymapState
-   ( KeymapState(..), newKeymapState, updateKeymapState, getOneKeySym, getStateSyms
+   ( KeymapState, newKeymapState, updateKeymapState, getOneKeySym, getStateSyms
    ) where
 
 import Foreign

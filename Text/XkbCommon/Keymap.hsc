@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.Keymap
-   ( Keymap(..), RMLVO(..), noPrefs,
+   ( Keymap, RMLVO(..), noPrefs,
 
      newKeymapFromNames, newKeymapFromString, keymapAsString, keymapNumLayouts,
      keymapKeyNumLayouts, keymapNumMods, keymapModName, keymapNumLevels, keymapNumLeds,
