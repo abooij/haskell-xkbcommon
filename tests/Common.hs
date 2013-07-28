@@ -1,4 +1,4 @@
-module Common (assert, datadir, getTestContext, Direction(..), testKeySeq, ks) where
+module Common (assert, datadir, getTestContext, KeyDirections(..), testKeySeq, ks) where
 
 import Data.Maybe
 import Control.Monad
@@ -17,9 +17,9 @@ getTestContext = do
    appendIncludePath ctx datadir
    return ctx
 
-data Direction = Down | Up | Both | Repeat deriving (Show, Eq)
+data KeyDirections = Down | Up | Both | Repeat deriving (Show, Eq)
 
-testKeySeq :: Keymap -> [(CKeycode, Direction, Keysym)] -> IO [()]
+testKeySeq :: Keymap -> [(CKeycode, KeyDirections, Keysym)] -> IO [()]
 testKeySeq km tests = do
    st <- newKeymapState km
    return =<< mapM (testOne st) (zip tests [1..]) where

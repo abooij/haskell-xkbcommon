@@ -23,7 +23,7 @@ newKeymapState km = withKeymap km $
          l <- newForeignPtr c_unref_keymap_state k
          return $ toKeymapState l
 
-updateKeymapState :: KeymapState -> CKeycode -> CDirection -> IO StateComponent
+updateKeymapState :: KeymapState -> CKeycode -> Direction -> IO StateComponent
 updateKeymapState st key dir = withKeymapState st $
       \ ptr -> c_update_key_state ptr key dir
 
@@ -99,7 +99,7 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h &xkb_state_unref"
 -- Below functions are not marshalled properly yet!!!
 
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_update_key"
-   c_update_key_state :: Ptr CKeymapState -> CKeycode -> CDirection -> IO StateComponent
+   c_update_key_state :: Ptr CKeymapState -> CKeycode -> Direction -> IO StateComponent
 
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_key_get_one_sym"
    c_get_one_key_sym :: Ptr CKeymapState -> CKeycode -> IO CKeysym

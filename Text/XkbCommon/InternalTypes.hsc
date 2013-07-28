@@ -10,7 +10,7 @@ module Text.XkbCommon.InternalTypes
 
      readCString,
 
-     CDirection(..), keyUp, keyDown,
+     Direction(..), keyUp, keyDown,
 
      CKeysym(..), Keysym(..), toKeysym, fromKeysym, safeToKeysym,
 
@@ -152,8 +152,8 @@ defaultFlags = noFlags :: ContextFlags
 pureFlags = allFlags :: ContextFlags
 
 -- newtype CCompileFlags = CCompileFlags #{type enum xkb_keymap_compile_flags} -- only one option, so disabled
-newtype CDirection = CDirection #{type enum xkb_key_direction}
-#{enum CDirection, CDirection, keyUp = XKB_KEY_UP, keyDown = XKB_KEY_DOWN}
+newtype Direction = Direction #{type enum xkb_key_direction}
+#{enum Direction, Direction, keyUp = XKB_KEY_UP, keyDown = XKB_KEY_DOWN}
 -- newtype CKeymapFormat = CKeymapFormat #{type enum xkb_keymap_format} -- only one option, so disabled
 -- newtype CKeysymFlags = CKeysymFlags #{type enum xkb_keysym_flags} -- only one option, so disabled
 newtype CLayoutIndex = CLayoutIndex #{type xkb_layout_index_t}
