@@ -9,7 +9,7 @@ and on the other, provide a cleaner base for new display protocol projects such 
 
 This project provides *incomplete* haskell bindings to libxkbcommon.
 
-Currently, haskell-xkbcommon is a very thin layer on top of libxkbcommon, and this code does not
+Currently, haskell-xkbcommon is a thin layer on top of libxkbcommon, and this code does not
 make xkbcommon look like a Haskell library.
 I need to read McAllister "High-level FFI in Haskell" and apply those ideas.
 
