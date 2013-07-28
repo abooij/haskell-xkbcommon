@@ -2,7 +2,7 @@ module Text.XkbCommon.Types
    ( CDirection, keyUp, keyDown,
 
      CLogLevel, CKeycode(..), CLayoutIndex(..), CModIndex(..), CLevelIndex(..),
-     CLedIndex(..), Keysym(..), CStateComponent, CModMask(..),
+     CLedIndex(..), Keysym(..), StateComponent, CModMask(..),
 
      module X
    ) where

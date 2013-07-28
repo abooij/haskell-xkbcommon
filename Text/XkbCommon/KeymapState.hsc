@@ -23,7 +23,7 @@ newKeymapState km = withKeymap km $
          l <- newForeignPtr c_unref_keymap_state k
          return $ toKeymapState l
 
-updateKeymapState :: KeymapState -> CKeycode -> CDirection -> IO CStateComponent
+updateKeymapState :: KeymapState -> CKeycode -> CDirection -> IO StateComponent
 updateKeymapState st key dir = withKeymapState st $
       \ ptr -> c_update_key_state ptr key dir
 
@@ -54,19 +54,19 @@ getStateSyms ks key = withKeymapState ks $ \ ptr -> do
 -- c_key_get_level :: Ptr CKeymapState -> CKeycode -> CLayoutIndex -> IO CLevelIndex
 
 -- Update a keyboard state from a set of explicit masks.
--- c_update_state_mask :: Ptr CKeymapState -> CModMask -> CModMask -> CModMask -> CLayoutIndex -> CLayoutIndex -> CLayoutIndex -> IO CStateComponent
+-- c_update_state_mask :: Ptr CKeymapState -> CModMask -> CModMask -> CModMask -> CLayoutIndex -> CLayoutIndex -> CLayoutIndex -> IO StateComponent
 
 -- The counterpart to xkb_state_update_mask for modifiers, to be used on the server side of serialization.
--- c_serialize_state_mods :: Ptr CKeymapState -> CStateComponent -> IO CModMask
+-- c_serialize_state_mods :: Ptr CKeymapState -> StateComponent -> IO CModMask
 
 -- The counterpart to xkb_state_update_mask for layouts, to be used on the server side of serialization.
--- c_serialize_state :: Ptr CKeymapState -> CStateComponent -> IO CLayoutIndex
+-- c_serialize_state :: Ptr CKeymapState -> StateComponent -> IO CLayoutIndex
 
 -- Test whether a modifier is active in a given keyboard state by name.
--- c_state_mod_name_is_active :: Ptr CKeymapState -> CString -> CStateComponent -> IO Int
+-- c_state_mod_name_is_active :: Ptr CKeymapState -> CString -> StateComponent -> IO Int
 
 -- Test whether a modifier is active in a given keyboard state by index.
--- c_state_mod_idx_is_active :: Ptr CKeymapState -> CModIndex -> CStateComponent -> IO CInt
+-- c_state_mod_idx_is_active :: Ptr CKeymapState -> CModIndex -> StateComponent -> IO CInt
 
 -- Test whether a modifier is consumed by keyboard state translation for a key.
 -- c_modifier_is_consumed :: Ptr CKeymapState -> CKeycode -> CModIndex -> IO CInt
@@ -75,10 +75,10 @@ getStateSyms ks key = withKeymapState ks $ \ ptr -> do
 -- c_remove_consumed_modifiers :: Ptr CKeymapState -> CKeycode -> CModMask -> IO CModMask
 
 -- Test whether a layout is active in a given keyboard state by name.
--- c_layout_name_is_active :: Ptr CKeymapState -> CString -> CStateComponent -> IO CInt
+-- c_layout_name_is_active :: Ptr CKeymapState -> CString -> StateComponent -> IO CInt
 
 -- Test whether a layout is active in a given keyboard state by index.
--- c_layout_index_is_active :: Ptr CKeymapState -> CLayoutIndex -> CStateComponent -> IO CInt
+-- c_layout_index_is_active :: Ptr CKeymapState -> CLayoutIndex -> StateComponent -> IO CInt
 
 -- Test whether a LED is active in a given keyboard state by name.
 -- c_led_name_is_active :: Ptr CKeymapState -> CString -> IO CInt
@@ -99,7 +99,7 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h &xkb_state_unref"
 -- Below functions are not marshalled properly yet!!!
 
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_update_key"
-   c_update_key_state :: Ptr CKeymapState -> CKeycode -> CDirection -> IO CStateComponent
+   c_update_key_state :: Ptr CKeymapState -> CKeycode -> CDirection -> IO StateComponent
 
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_key_get_one_sym"
    c_get_one_key_sym :: Ptr CKeymapState -> CKeycode -> IO CKeysym
@@ -126,22 +126,22 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_key_get_level"
 -- enum xkb_state_component    xkb_state::xkb_state_update_mask (struct xkb_state *state, xkb_mod_mask_t depressed_mods, xkb_mod_mask_t latched_mods, xkb_mod_mask_t locked_mods, xkb_layout_index_t depressed_layout, xkb_layout_index_t latched_layout, xkb_layout_index_t locked_layout)
 --     Update a keyboard state from a set of explicit masks.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_update_mask"
-   c_update_state_mask :: Ptr CKeymapState -> CModMask -> CModMask -> CModMask -> CLayoutIndex -> CLayoutIndex -> CLayoutIndex -> IO CStateComponent
+   c_update_state_mask :: Ptr CKeymapState -> CModMask -> CModMask -> CModMask -> CLayoutIndex -> CLayoutIndex -> CLayoutIndex -> IO StateComponent
 
 -- xkb_mod_mask_t    xkb_state::xkb_state_serialize_mods (struct xkb_state *state, enum xkb_state_component components)
 --     The counterpart to xkb_state_update_mask for modifiers, to be used on the server side of serialization.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_serialize_mods"
-   c_serialize_state_mods :: Ptr CKeymapState -> CStateComponent -> IO CModMask
+   c_serialize_state_mods :: Ptr CKeymapState -> StateComponent -> IO CModMask
 
 -- xkb_layout_index_t    xkb_state::xkb_state_serialize_layout (struct xkb_state *state, enum xkb_state_component components)
 --     The counterpart to xkb_state_update_mask for layouts, to be used on the server side of serialization.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_serialize_layout"
-   c_serialize_state :: Ptr CKeymapState -> CStateComponent -> IO CLayoutIndex
+   c_serialize_state :: Ptr CKeymapState -> StateComponent -> IO CLayoutIndex
 
 -- int    xkb_state::xkb_state_mod_name_is_active (struct xkb_state *state, const char *name, enum xkb_state_component type)
 --     Test whether a modifier is active in a given keyboard state by name.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_mod_name_is_active"
-   c_state_mod_name_is_active :: Ptr CKeymapState -> CString -> CStateComponent -> IO Int
+   c_state_mod_name_is_active :: Ptr CKeymapState -> CString -> StateComponent -> IO Int
 
 -- cannot be ccalled due to va_list
 -- int    xkb_state::xkb_state_mod_names_are_active (struct xkb_state *state, enum xkb_state_component type, enum xkb_state_match match,...)
@@ -151,7 +151,7 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_mod_name_is_active"
 -- int    xkb_state::xkb_state_mod_index_is_active (struct xkb_state *state, xkb_mod_index_t idx, enum xkb_state_component type)
 --     Test whether a modifier is active in a given keyboard state by index.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_mod_index_is_active"
-   c_state_mod_idx_is_active :: Ptr CKeymapState -> CModIndex -> CStateComponent -> IO CInt
+   c_state_mod_idx_is_active :: Ptr CKeymapState -> CModIndex -> StateComponent -> IO CInt
 
 -- cannot be ccalled due to va_list
 -- int    xkb_state::xkb_state_mod_indices_are_active (struct xkb_state *state, enum xkb_state_component type, enum xkb_state_match match,...)
@@ -171,12 +171,12 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_mod_mask_remove_con
 -- int    xkb_state::xkb_state_layout_name_is_active (struct xkb_state *state, const char *name, enum xkb_state_component type)
 --     Test whether a layout is active in a given keyboard state by name.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_layout_name_is_active"
-   c_layout_name_is_active :: Ptr CKeymapState -> CString -> CStateComponent -> IO CInt
+   c_layout_name_is_active :: Ptr CKeymapState -> CString -> StateComponent -> IO CInt
 
 -- int    xkb_state::xkb_state_layout_index_is_active (struct xkb_state *state, xkb_layout_index_t idx, enum xkb_state_component type)
 --     Test whether a layout is active in a given keyboard state by index.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_layout_index_is_active"
-   c_layout_index_is_active :: Ptr CKeymapState -> CLayoutIndex -> CStateComponent -> IO CInt
+   c_layout_index_is_active :: Ptr CKeymapState -> CLayoutIndex -> StateComponent -> IO CInt
 
 -- int    xkb_state::xkb_state_led_name_is_active (struct xkb_state *state, const char *name)
 --     Test whether a LED is active in a given keyboard state by name.
