@@ -8,7 +8,7 @@ import Foreign
 import Foreign.C
 import Foreign.Storable
 import Data.Functor
-import Data.Maybe (catMaybes)
+import Data.Maybe (mapMaybe)
 
 import Text.XkbCommon.InternalTypes
 
@@ -45,7 +45,7 @@ getStateSyms ks key = withKeymapState ks $ \ ptr -> do
    out_list <- peekArray (fromIntegral num_out) deref_ptr
    --free deref_ptr >> free in_ptr >> free init_ptr
    free in_ptr >> free init_ptr
-   return $ catMaybes $ map safeToKeysym out_list
+   return $ mapMaybe safeToKeysym out_list
 
 -- Get the effective layout index for a key in a given keyboard state.
 -- c_get_layout :: Ptr CKeymapState -> CKeycode -> IO CLayoutIndex

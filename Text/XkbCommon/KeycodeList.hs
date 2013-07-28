@@ -13,4 +13,4 @@ $(runIO genKeycodes >>= return)
 toEvdev :: CKeycode -> Int
 toEvdev (CKeycode k) = fromIntegral k - 8
 fromEvdev :: Int -> CKeycode
-fromEvdev k = CKeycode $ fromIntegral (k+8)
+fromEvdev k = CKeycode $ fromIntegral (k + 8)

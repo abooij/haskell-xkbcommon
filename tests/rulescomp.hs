@@ -23,7 +23,7 @@ setRmlvoEnv rmlvo = do
 
 main = do
    ctx <- getTestContext
-   envCtx <- liftM fromJust $ newContext (ContextFlags True False)
+   envCtx <- liftM fromJust $ newContext contextNoDefaultIncs
    appendIncludePath envCtx datadir
    setRmlvoEnv noPrefs
 
@@ -48,7 +48,7 @@ main = do
          (Just "evdev")
          (Just "pc105")
          (Just "us,in")
-         (Nothing)
+         Nothing
          (Just "grp:alts_toggle"))
    testKeySeq km [
       (keycode_a,          Both, keysym_a),
@@ -63,7 +63,7 @@ main = do
          (Just "pc105")
          (Just "us")
          (Just "intl")
-         (Nothing))
+         Nothing)
    testKeySeq km [
       (keycode_grave,      Both,  keysym_dead_grave)]
 
@@ -78,18 +78,18 @@ main = do
 
    km <- liftM fromJust $ newKeymapFromNames ctx (RMLVO
          (Just "evdev")
-         (Nothing)
+         Nothing
          (Just "us:20")
-         (Nothing)
-         (Nothing))
+         Nothing
+         Nothing)
    testKeySeq km [
       (keycode_a,          Both, keysym_a)]
 
    km <- liftM fromJust $ newKeymapFromNames ctx (RMLVO
          (Just "evdev")
-         (Nothing)
+         Nothing
          (Just "us,,ca")
-         (Nothing)
+         Nothing
          (Just "grp:alts_toggle"))
    testKeySeq km [
       (keycode_a,          Both, keysym_a),
@@ -109,27 +109,27 @@ main = do
 
    km <- newKeymapFromNames ctx (RMLVO
          (Just "does-not-exist")
-         (Nothing)
-         (Nothing)
-         (Nothing)
-         (Nothing))
+         Nothing
+         Nothing
+         Nothing
+         Nothing)
    assert (isNothing km) "compiled nonexistent keymap"
 
    setRmlvoEnv (RMLVO
          (Just "evdev")
-         (Nothing)
+         Nothing
          (Just "us")
-         (Nothing)
-         (Nothing))
+         Nothing
+         Nothing)
    km <- liftM fromJust $ newKeymapFromNames envCtx noPrefs
    testKeySeq km [
       (keycode_a,          Both, keysym_a)]
 
    setRmlvoEnv (RMLVO
          (Just "evdev")
-         (Nothing)
+         Nothing
          (Just "us")
-         (Nothing)
+         Nothing
          (Just "ctrl:nocaps"))
    km <- liftM fromJust $ newKeymapFromNames envCtx noPrefs
    testKeySeq km [
@@ -137,7 +137,7 @@ main = do
 
    setRmlvoEnv (RMLVO
          (Just "evdev")
-         (Nothing)
+         Nothing
          (Just "us,ca")
          (Just ",,,multix")
          (Just "grp:alts_toggle"))
@@ -154,8 +154,8 @@ main = do
          (Just "broken")
          (Just "what-on-earth")
          (Just "invalid")
-         (Nothing)
-         (Nothing))
+         Nothing
+         Nothing)
    km <- newKeymapFromNames envCtx noPrefs
    assert (isNothing km) "compiled nonexistent keymap"
 

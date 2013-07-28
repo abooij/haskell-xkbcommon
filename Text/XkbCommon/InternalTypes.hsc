@@ -1,8 +1,8 @@
-{-# LANGUAGE CPP, EmptyDataDecls #-}
+{-# LANGUAGE CPP, EmptyDataDecls, GeneralizedNewtypeDeriving #-}
 module Text.XkbCommon.InternalTypes
    ( Context, CContext, InternalContext, toContext, fromContext, withContext,
      ContextFlags(..), defaultFlags,
-     pureFlags,
+     pureFlags, contextNoDefaultIncs, contextNoEnvironment,
 
      Keymap, CKeymap, InternalKeymap, toKeymap, fromKeymap, withKeymap, RMLVO(..), noPrefs,
 
@@ -23,6 +23,7 @@ import Foreign.C
 import Foreign.Storable
 import Control.Monad (ap)
 import qualified Foreign.Storable.Newtype as Store
+import Data.Flags
 
 #include <xkbcommon/xkbcommon.h>
 
@@ -37,14 +38,6 @@ fromContext :: Context -> InternalContext
 fromContext (Context ic) = ic
 withContext :: Context -> (Ptr CContext -> IO a) -> IO a
 withContext = withForeignPtr . fromContext
-
--- Option flags for context creation
-data ContextFlags = ContextFlags
-   { noDefaultIncludes :: Bool
-   , noEnvironmentNames :: Bool
-   } deriving (Eq, Show)
-defaultFlags = ContextFlags { noDefaultIncludes = False, noEnvironmentNames = False }
-pureFlags = ContextFlags { noDefaultIncludes = True, noEnvironmentNames = True }
 
 -- Keymap is struct xkb_keymap *
 data Keymap = Keymap InternalKeymap
@@ -117,13 +110,13 @@ readCString cstr = do
    free cstr
    return str
 
-newtype CKeysym = CKeysym {unCKeysym :: #{type xkb_keysym_t}} deriving(Show, Eq)
+newtype CKeysym = CKeysym {unCKeysym :: #{type xkb_keysym_t}} deriving (Show, Eq)
 instance Storable CKeysym where
    sizeOf = Store.sizeOf unCKeysym
    alignment = Store.alignment unCKeysym
    peek = Store.peek CKeysym
    poke = Store.poke unCKeysym
-newtype Keysym = Keysym Int deriving(Show, Eq)
+newtype Keysym = Keysym Int deriving (Show, Eq)
 fromKeysym :: Keysym -> CKeysym
 fromKeysym (Keysym k) = CKeysym (fromIntegral k)
 toKeysym :: CKeysym -> Keysym
@@ -133,7 +126,7 @@ safeToKeysym :: CKeysym -> Maybe Keysym
 safeToKeysym (CKeysym 0) = Nothing
 safeToKeysym (CKeysym n) = Just (Keysym (fromIntegral n))
 
-newtype CKeycode = CKeycode {unCKeycode :: #{type xkb_keycode_t}} deriving(Show, Eq)
+newtype CKeycode = CKeycode {unCKeycode :: #{type xkb_keycode_t}} deriving (Show, Eq)
 instance Storable CKeycode where
    sizeOf = Store.sizeOf unCKeycode
    alignment = Store.alignment unCKeycode
@@ -148,6 +141,16 @@ instance Storable CKeycode where
 -- safeToKeycode (CKeycode 0) = Nothing
 -- safeToKeycode (CKeycode n) = Just (Keycode n)
 
+
+newtype ContextFlags = ContextFlags #{type enum xkb_context_flags}
+   deriving (Eq, Flags, BoundedFlags)
+#{enum ContextFlags, ContextFlags
+, contextNoEnvironment = XKB_CONTEXT_NO_ENVIRONMENT_NAMES
+, contextNoDefaultIncs = XKB_CONTEXT_NO_DEFAULT_INCLUDES
+   }
+defaultFlags = noFlags :: ContextFlags
+pureFlags = allFlags :: ContextFlags
+
 -- newtype CCompileFlags = CCompileFlags #{type enum xkb_keymap_compile_flags} -- only one option, so disabled
 newtype CDirection = CDirection #{type enum xkb_key_direction}
 #{enum CDirection, CDirection, keyUp = XKB_KEY_UP, keyDown = XKB_KEY_DOWN}
@@ -160,5 +163,17 @@ newtype CLogLevel = CLogLevel #{type enum xkb_log_level}
 newtype CModIndex = CModIndex #{type xkb_mod_index_t}
 newtype CModMask = CModMask #{type xkb_mod_mask_t}
 newtype CStateComponent = CStateComponent #{type enum xkb_state_component} -- ATTENTION this is a bitmask!
+   deriving (Eq, Flags, BoundedFlags)
+#{enum CStateComponent, CStateComponent
+, stateModDepressed  = XKB_STATE_MODS_DEPRESSED
+, stateModsLatched   = XKB_STATE_MODS_LATCHED
+, stateModsLocked    = XKB_STATE_MODS_LOCKED
+, stateModsEffective = XKB_STATE_MODS_EFFECTIVE
+, stateLayoutDepressed = XKB_STATE_LAYOUT_DEPRESSED
+, stateLayoutLatched   = XKB_STATE_LAYOUT_LATCHED
+, stateLayoutLocked    = XKB_STATE_LAYOUT_LOCKED
+, stateLayoutEffective = XKB_STATE_LAYOUT_EFFECTIVE
+, stateLeds            = XKB_STATE_LEDS
+   }
 
 -- TODO keysym data types

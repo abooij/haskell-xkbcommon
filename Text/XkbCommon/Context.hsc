@@ -1,7 +1,11 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.Context
-   ( Context(..), ContextFlags(..), defaultFlags, pureFlags, newContext,
+   ( Context(..),
+
+     ContextFlags, defaultFlags, pureFlags, contextNoDefaultIncs, contextNoEnvironment,
+
+     newContext,
      appendIncludePath, numIncludePaths, clearIncludePath, appendDefaultIncludePath,
      includePathShow,
    ) where
@@ -20,7 +24,7 @@ import Text.XkbCommon.InternalTypes
 -- xkb_context_new can fail if the default include path does not exist
 newContext :: ContextFlags -> IO (Maybe Context)
 newContext c = do
-   k <- c_new_context $ translateContextFlags c
+   k <- c_new_context c
    if k == nullPtr
       then return Nothing
       else do
@@ -54,25 +58,6 @@ numIncludePaths c = withContext c $ liftM fromIntegral . c_num_include_paths_con
 includePathShow :: Context -> Int -> IO String
 includePathShow ctx idx = withContext ctx $ \ ptr -> c_show_include_path ptr (fromIntegral idx) >>= peekCString
 
--- BORING TRANSLATION STUFF
-
--- ugh, this one is rather ugly, but i really don't know how else to tackle it.
-type CContextFlags = #type int
-#{enum CContextFlags,
-   , noFlags       = 0
-   , noEnvNamFlags = XKB_CONTEXT_NO_ENVIRONMENT_NAMES
-   , noDefIncFlags = XKB_CONTEXT_NO_DEFAULT_INCLUDES
-   , bothFlags     = XKB_CONTEXT_NO_DEFAULT_INCLUDES + XKB_CONTEXT_NO_ENVIRONMENT_NAMES
-   }
-
-translateContextFlags :: ContextFlags -> CContextFlags
-translateContextFlags x = j + k where
-   j = if noDefaultIncludes x then noDefIncFlags else 0
-   k = if noEnvironmentNames x then noEnvNamFlags else 0
-
-
-
-
 
 -- FOREIGN CCALLS
 
@@ -80,7 +65,7 @@ translateContextFlags x = j + k where
 -- context related
 
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_context_new"
-   c_new_context :: CContextFlags -> IO (Ptr CContext)
+   c_new_context :: ContextFlags -> IO (Ptr CContext)
 
 foreign import ccall unsafe "xkbcommon/xkbcommon.h &xkb_context_unref"
    c_unref_context :: FinalizerPtr CContext

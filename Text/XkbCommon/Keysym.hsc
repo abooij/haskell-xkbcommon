@@ -33,19 +33,17 @@ keysymName :: Keysym -> String
 keysymName ks = S.unsafePerformIO $ do
    -- build 64-byte buffer and pass
    let buflen = 64
-   str <- withCString (replicate buflen ' ') $ \ cstr -> do
+   withCString (replicate buflen ' ') $ \ cstr -> do
       len <- c_keysym_name (fromKeysym ks) cstr (fromIntegral buflen)
       return =<< peekCString cstr
-   return str
 
 keysymUtf8 :: Keysym -> String
 keysymUtf8 ks = S.unsafePerformIO $ do
    let buflen = 64
-   str <- withCString (replicate buflen ' ') $ \ cstr -> do
+   withCString (replicate buflen ' ') $ \ cstr -> do
       len <- c_keysym_utf8_name (fromKeysym ks) cstr (fromIntegral buflen)
       bs <- charPtrToByteString0 cstr
       return $ unpack $ decodeUtf8 bs
-   return str
 
 
 -- unsafely marshal zero-terminated char* to ByteString

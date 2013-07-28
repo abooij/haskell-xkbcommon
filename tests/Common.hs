@@ -26,15 +26,15 @@ testKeySeq km tests = do
       testOne st ((kc, dir, ks),n) = do
          syms <- getStateSyms st kc
 
-         when (dir == Down || dir == Both) $ updateKeymapState st kc keyDown >> return ()
-         when (dir == Up || dir == Both) $ updateKeymapState st kc keyUp >> return ()
+         when (dir == Down || dir == Both) $ void (updateKeymapState st kc keyDown)
+         when (dir == Up || dir == Both) $ void (updateKeymapState st kc keyUp)
 
          -- in this test, we always get exactly one keysym
          assert (length syms == 1) "did not get right amount of keysyms"
 
          assert (head syms == ks) ("did not get correct keysym " ++ show ks
                                    ++ " for keycode " ++ show kc
-                                   ++ ", got " ++ (show$head syms)
+                                   ++ ", got " ++ show (head syms)
                                    ++ " in test " ++ show n)
 
          -- this probably doesn't do anything since if we came this far, head syms == ks
