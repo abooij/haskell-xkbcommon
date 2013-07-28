@@ -25,6 +25,7 @@ library
     Text.XkbCommon.Keysym,
     Text.XkbCommon.KeysymList,
     Text.XkbCommon.KeycodeList,
+    Text.XkbCommon.ModList,
     Text.XkbCommon.ParseDefines,
     Text.XkbCommon.InternalTypes
   -- other-modules:
@@ -78,6 +79,14 @@ Test-Suite rulescomp
   other-modules: Common
   main-is: rulescomp.hs
   build-depends : base, xkbcommon, unix
+  extra-libraries: xkbcommon
+
+Test-Suite state
+  type: exitcode-stdio-1.0
+  hs-source-dirs: tests
+  other-modules: Common
+  main-is: state.hs
+  build-depends : base, xkbcommon
   extra-libraries: xkbcommon
 
 Test-Suite stringcomp

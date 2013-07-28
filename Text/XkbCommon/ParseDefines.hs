@@ -1,5 +1,5 @@
 module Text.XkbCommon.ParseDefines
-   ( readHeader, genKeysyms, genKeycodes ) where
+   ( readHeader, genKeysyms, genKeycodes, genModnames ) where
 
 import Language.Haskell.TH
 import Language.Preprocessor.Cpphs
@@ -36,6 +36,18 @@ genKeycodes = do
    let filtered_defs = filter (\ (name, val) -> isPrefixOf "KEY_" name && notElem name exclude_defs && isJust (maybeRead val :: Maybe Int)) defs
    let parsed_defs = map (drop 4 *** read) filtered_defs
    return $ map (\ (name, val) -> ValD (VarP $ mkName ("keycode_" ++ lowerCase name)) (NormalB (AppE (ConE $ mkName "CKeycode") $ LitE (IntegerL (8 + val)))) []) parsed_defs
+
+genModnames :: IO [Dec]
+-- genKeycodes = return []
+genModnames = do
+   (filename, keysyms_header) <- readHeader "xkbcommon/xkbcommon-names.h"
+   (_, defs) <- macroPassReturningSymTab [] defaultBoolOptions [(newfile filename, keysyms_header)]
+   let exclude_defs = []
+   let mod_defs = filter (\ (name, val) -> isPrefixOf "XKB_MOD_" name && notElem name exclude_defs && isJust (maybeRead val :: Maybe String)) defs
+   let led_defs = filter (\ (name, val) -> isPrefixOf "XKB_LED_" name && notElem name exclude_defs && isJust (maybeRead val :: Maybe String)) defs
+   let parsed_mods = map ((\ name -> "modname_" ++ lowerCase (drop 13 name)) *** read) mod_defs
+   let parsed_leds = map ((\ name -> "ledname_" ++ lowerCase (drop 13 name)) *** read) led_defs
+   return $ map (\ (name, val) -> ValD (VarP $ mkName name) (NormalB (LitE (StringL val))) []) (parsed_mods ++ parsed_leds)
 
 maybeRead :: Read a => String -> Maybe a
 maybeRead s = case reads s of

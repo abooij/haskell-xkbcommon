@@ -16,6 +16,10 @@ module Text.XkbCommon.InternalTypes
 
      CLogLevel(..), CKeycode(..), CLayoutIndex(..), CModIndex(..), CLevelIndex(..),
      CLedIndex(..), StateComponent(..), CModMask(..),
+
+     stateModDepressed, stateModLatched, stateModLocked, stateModEffective,
+     stateLayoutDepressed, stateLayoutLatched, stateLayoutLocked,
+     stateLayoutEffective, stateLeds,
    ) where
 
 import Foreign
@@ -165,10 +169,10 @@ newtype CModMask = CModMask #{type xkb_mod_mask_t}
 newtype StateComponent = StateComponent #{type enum xkb_state_component} -- ATTENTION this is a bitmask!
    deriving (Eq, Flags, BoundedFlags)
 #{enum StateComponent, StateComponent
-, stateModDepressed  = XKB_STATE_MODS_DEPRESSED
-, stateModsLatched   = XKB_STATE_MODS_LATCHED
-, stateModsLocked    = XKB_STATE_MODS_LOCKED
-, stateModsEffective = XKB_STATE_MODS_EFFECTIVE
+, stateModDepressed    = XKB_STATE_MODS_DEPRESSED
+, stateModLatched      = XKB_STATE_MODS_LATCHED
+, stateModLocked       = XKB_STATE_MODS_LOCKED
+, stateModEffective    = XKB_STATE_MODS_EFFECTIVE
 , stateLayoutDepressed = XKB_STATE_LAYOUT_DEPRESSED
 , stateLayoutLatched   = XKB_STATE_LAYOUT_LATCHED
 , stateLayoutLocked    = XKB_STATE_LAYOUT_LOCKED

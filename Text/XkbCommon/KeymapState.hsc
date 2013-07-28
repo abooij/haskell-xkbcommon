@@ -1,7 +1,9 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.KeymapState
-   ( KeymapState, newKeymapState, updateKeymapState, getOneKeySym, getStateSyms
+   ( KeymapState, newKeymapState, updateKeymapState, getOneKeySym, getStateSyms,
+
+     stateModNameIsActive, stateLedNameIsActive,
    ) where
 
 import Foreign
@@ -64,6 +66,11 @@ getStateSyms ks key = withKeymapState ks $ \ ptr -> do
 
 -- Test whether a modifier is active in a given keyboard state by name.
 -- c_state_mod_name_is_active :: Ptr CKeymapState -> CString -> StateComponent -> IO Int
+stateModNameIsActive :: KeymapState -> String -> StateComponent -> IO Bool
+stateModNameIsActive ks name comp = withKeymapState ks $ \ ptr ->
+   withCString name $ \ cstr -> do
+      out <- c_state_mod_name_is_active ptr cstr comp
+      return $ out /= 0
 
 -- Test whether a modifier is active in a given keyboard state by index.
 -- c_state_mod_idx_is_active :: Ptr CKeymapState -> CModIndex -> StateComponent -> IO CInt
@@ -82,6 +89,11 @@ getStateSyms ks key = withKeymapState ks $ \ ptr -> do
 
 -- Test whether a LED is active in a given keyboard state by name.
 -- c_led_name_is_active :: Ptr CKeymapState -> CString -> IO CInt
+stateLedNameIsActive :: KeymapState -> String -> IO Bool
+stateLedNameIsActive ks name = withKeymapState ks $ \ ptr ->
+   withCString name $ \ cstr -> do
+      out <- c_led_name_is_active ptr cstr
+      return $ out /= 0
 
 -- Test whether a LED is active in a given keyboard state by index.
 -- c_led_index_is_active :: Ptr CKeymapState -> CLedIndex -> IO CInt
