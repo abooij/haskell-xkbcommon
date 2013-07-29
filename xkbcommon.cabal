@@ -16,16 +16,17 @@ cabal-version:       >=1.8
 
 library
   exposed-modules:
-    Text.XkbCommon
-  other-modules:
+    Text.XkbCommon,
+    Text.XkbCommon.KeysymList,
+    Text.XkbCommon.KeycodeList,
+    Text.XkbCommon.ModList,
+    Text.XkbCommon.Constants,
     Text.XkbCommon.Types,
     Text.XkbCommon.Context,
     Text.XkbCommon.Keymap,
     Text.XkbCommon.KeymapState,
-    Text.XkbCommon.Keysym,
-    Text.XkbCommon.KeysymList,
-    Text.XkbCommon.KeycodeList,
-    Text.XkbCommon.ModList,
+    Text.XkbCommon.Keysym
+  other-modules:
     Text.XkbCommon.ParseDefines,
     Text.XkbCommon.InternalTypes
   -- other-modules:

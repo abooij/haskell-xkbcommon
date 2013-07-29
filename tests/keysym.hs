@@ -1,6 +1,8 @@
-import Text.XkbCommon
 import Control.Monad
 import Data.Maybe
+
+import Text.XkbCommon
+import Text.XkbCommon.KeysymList
 
 import Common
 

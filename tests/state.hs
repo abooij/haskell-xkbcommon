@@ -3,6 +3,7 @@ import Data.Maybe
 import Data.Functor
 
 import Text.XkbCommon
+import Text.XkbCommon.Constants
 
 import Common
 

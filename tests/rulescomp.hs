@@ -4,6 +4,7 @@ import Data.Functor
 import System.Posix.Env
 
 import Text.XkbCommon
+import Text.XkbCommon.Constants
 
 import Common
 
