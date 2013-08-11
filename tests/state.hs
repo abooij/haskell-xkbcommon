@@ -38,7 +38,7 @@ testUpdateKey km = do
    blergh (stateLedNameIsActive st ledname_caps)
    out <- getStateSyms st keycode_q
    assert (1 == length out) "err"
-   assert (out !! 0 == keysym_Q) "err"
+   assert (head out == keysym_Q) "err"
 
    updateKeymapState st keycode_numlock keyDown
    updateKeymapState st keycode_numlock keyUp
@@ -46,7 +46,7 @@ testUpdateKey km = do
    blergh (stateModNameIsActive st "Mod2" stateModLocked)
    out <- getStateSyms st keycode_kp1
    assert (1 == length out) "err"
-   assert (out !! 0 == keysym_KP_1) "err"
+   assert (head out == keysym_KP_1) "err"
    blergh (stateLedNameIsActive st ledname_num)
 
    updateKeymapState st keycode_numlock keyDown
@@ -68,19 +68,19 @@ testUpdateKey km = do
    blergh (liftM not $ stateLedNameIsActive st ledname_caps)
    out <- getStateSyms st keycode_q
    assert (1 == length out) "err"
-   assert (out !! 0 == keysym_q) "err"
+   assert (head out == keysym_q) "err"
 
 
    out <- getStateSyms st keycode_6
    assert (5 == length out) "err"
-   assert (out !! 0 == keysym_H) "err"
+   assert (head out == keysym_H) "err"
    assert (out !! 1 == keysym_E) "err"
    assert (out !! 2 == keysym_L) "err"
    assert (out !! 3 == keysym_L) "err"
    assert (out !! 4 == keysym_O) "err"
 
    out <- getOneKeySym st keycode_6
-   assert (out == Nothing) "err"
+   assert (isNothing out) "err"
    updateKeymapState st keycode_6 keyDown
    updateKeymapState st keycode_6 keyUp
 
@@ -104,10 +104,9 @@ testSerialisation km = do
    lockedMods <- stateSerializeMods st stateModLocked
    effectiveMods <- stateSerializeMods st stateModEffective
 
-   mapM print [baseMods,latchedMods,lockedMods,effectiveMods]
    assert (baseMods == 0) "baseMods invalid"
    assert (latchedMods == 0) "latchedMods invalid"
-   assert (lockedMods == (2^(unCModIndex caps))) "lockedMods invalid"
+   assert (lockedMods == (2^unCModIndex caps)) "lockedMods invalid"
    assert (effectiveMods == lockedMods) "effectiveMods invalid"
 
    updateKeymapState st keycode_leftshift keyDown
@@ -117,14 +116,12 @@ testSerialisation km = do
    lockedMods <- stateSerializeMods st stateModLocked
    effectiveMods <- stateSerializeMods st stateModEffective
 
-   print $ unCModIndex shift
-   mapM print [baseMods,latchedMods,lockedMods,effectiveMods]
-   assert (baseMods == (2^(unCModIndex shift))) "baseMods invalid"
+   assert (baseMods == (2^unCModIndex shift)) "baseMods invalid"
    assert (latchedMods == 0) "latchedMods invalid"
-   assert (lockedMods == (2^(unCModIndex caps))) "lockedMods invalid"
-   assert (effectiveMods == (2^(unCModIndex shift)) + (2^(unCModIndex caps))) "effectiveMods invalid"
+   assert (lockedMods == (2^unCModIndex caps)) "lockedMods invalid"
+   assert (effectiveMods == (2^unCModIndex shift) + (2^unCModIndex caps)) "effectiveMods invalid"
 
-   let baseModsWithCtrl = baseMods + 2^(unCModIndex ctrl)
+   let baseModsWithCtrl = baseMods + 2^unCModIndex ctrl
    let layout0 = CLayoutIndex 0
    updateKeymapStateMask st (baseModsWithCtrl, latchedMods, lockedMods) (layout0, layout0, layout0)
 
@@ -151,13 +148,13 @@ testConsume km = do
    updateKeymapState st keycode_equal keyDown
 
    mask <- stateSerializeMods st stateModEffective
-   assert (mask == 2^(unCModIndex alt) + 2^(unCModIndex shift)) "err"
+   assert (mask == 2^unCModIndex alt + 2^unCModIndex shift) "err"
 
    newMask <- stateRemoveConsumed st keycode_equal mask
-   assert (newMask == 2^(unCModIndex alt)) $
-               "consumed error: mask "++(show mask)
-               ++", newMask "++(show newMask)
-               ++", expected "++(show $ 2^(unCModIndex alt))
+   assert (newMask == 2^unCModIndex alt) $
+               "consumed error: mask " ++ show mask
+               ++ ", newMask " ++ show newMask
+               ++ ", expected " ++ show (2^unCModIndex alt)
 
 {- UNSUPPORTED AT THIS STAGE
 static void
