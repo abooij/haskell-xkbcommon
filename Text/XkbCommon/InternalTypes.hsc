@@ -14,7 +14,7 @@ module Text.XkbCommon.InternalTypes
 
      CKeysym(..), Keysym(..), toKeysym, fromKeysym, safeToKeysym,
 
-     CLogLevel(..), CKeycode(..), CLayoutIndex(..), CModIndex(..), CLevelIndex(..),
+     CLogLevel(..), CKeycode(..), CLayoutIndex(..), CModIndex(..), unCModIndex, CLevelIndex(..),
      CLedIndex(..), StateComponent(..), CModMask(..),
 
      stateModDepressed, stateModLatched, stateModLocked, stateModEffective,
@@ -165,7 +165,9 @@ newtype CLedIndex = CLedIndex #{type xkb_led_index_t}
 newtype CLevelIndex = CLevelIndex #{type xkb_level_index_t}
 newtype CLogLevel = CLogLevel #{type enum xkb_log_level}
 newtype CModIndex = CModIndex #{type xkb_mod_index_t}
-newtype CModMask = CModMask #{type xkb_mod_mask_t}
+unCModIndex :: CModIndex -> #{type xkb_mod_index_t}
+unCModIndex (CModIndex n) = n
+newtype CModMask = CModMask #{type xkb_mod_mask_t} deriving(Eq, Num, Show)
 newtype StateComponent = StateComponent #{type enum xkb_state_component} -- ATTENTION this is a bitmask!
    deriving (Eq, Flags, BoundedFlags)
 #{enum StateComponent, StateComponent

@@ -4,7 +4,8 @@ module Text.XkbCommon.Keymap
    ( Keymap, RMLVO(..), noPrefs,
 
      newKeymapFromNames, newKeymapFromString, keymapAsString, keymapNumLayouts,
-     keymapKeyNumLayouts, keymapNumMods, keymapModName, keymapNumLevels, keymapNumLeds,
+     keymapKeyNumLayouts, keymapNumMods, keymapModName, keymapModIdx, keymapNumLevels,
+     keymapNumLeds,
      keymapLedName, keymapKeyRepeats
    ) where
 
@@ -60,7 +61,16 @@ keymapNumMods km = S.unsafePerformIO $ withKeymap km c_keymap_num_mods
 -- Get the name of a modifier by index.
 keymapModName :: Keymap -> CModIndex -> String
 keymapModName km idx = S.unsafePerformIO $ withKeymap km $
-   \ ptr -> c_keymap_mod_name ptr idx >>= readCString
+   \ ptr -> c_keymap_mod_name ptr idx >>= peekCString
+
+-- Get the index of a modifier by name.
+keymapModIdx :: Keymap -> String -> Maybe CModIndex
+keymapModIdx km name = S.unsafePerformIO $ withKeymap km $
+   \ ptr -> withCString name $ \ cstr -> do
+      idx <- c_keymap_mod_index ptr cstr
+      case idx of
+         CModIndex (#{const XKB_MOD_INVALID}) -> return Nothing
+         x@(CModIndex n) -> return $ Just x
 
 -- Get the number of shift levels for a specific key and layout.
 keymapNumLevels :: Keymap -> CKeycode -> CLayoutIndex -> CLevelIndex
@@ -79,12 +89,12 @@ keymapNumLeds km = S.unsafePerformIO $ withKeymap km c_keymap_num_leds
 -- c_keymap_led_name :: Ptr CKeymap -> CLedIndex -> IO CString
 keymapLedName :: Keymap -> CLedIndex -> String
 keymapLedName km id = S.unsafePerformIO . withKeymap km $
-   \ ptr -> c_keymap_led_name ptr id >>= readCString
+   \ ptr -> c_keymap_led_name ptr id >>= peekCString
 
 -- Determine whether a key should repeat or not.
 -- c_keymap_key_repeats :: Ptr CKeymap -> CKeycode -> IO CInt
 keymapKeyRepeats :: Keymap -> CKeycode -> Bool
-keymapKeyRepeats km kc = S.unsafePerformIO (withKeymap km $ \ ptr -> c_keymap_key_repeats ptr kc) == 0
+keymapKeyRepeats km kc = S.unsafePerformIO (withKeymap km $ \ ptr -> c_keymap_key_repeats ptr kc) /= 0
 
 -- FOREIGN CCALLS
 
@@ -119,6 +129,11 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_keymap_num_mods"
 --     Get the name of a modifier by index.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_keymap_mod_get_name"
    c_keymap_mod_name :: Ptr CKeymap -> CModIndex -> IO CString
+
+-- xkb_mod_index_t 	xkb_keymap::xkb_keymap_mod_get_index (struct xkb_keymap *keymap, const char *name)
+--  	Get the index of a modifier by name. More...
+foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_keymap_mod_get_index"
+   c_keymap_mod_index :: Ptr CKeymap -> CString -> IO CModIndex
 
 -- xkb_layout_index_t    xkb_keymap::xkb_keymap_num_layouts (struct xkb_keymap *keymap)
 --     Get the number of layouts in the keymap.

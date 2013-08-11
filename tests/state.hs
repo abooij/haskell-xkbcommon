@@ -88,101 +88,78 @@ testUpdateKey km = do
    assert (out == Just keysym_5) "err"
 
 
-{-
+testSerialisation :: Keymap -> IO ()
+testSerialisation km = do
+   st <- newKeymapState km
 
-static void
-test_serialisation(struct xkb_keymap *keymap)
-{
-    struct xkb_state *state = xkb_state_new(keymap);
-    xkb_mod_mask_t base_mods;
-    xkb_mod_mask_t latched_mods;
-    xkb_mod_mask_t locked_mods;
-    xkb_mod_mask_t effective_mods;
-    xkb_mod_index_t caps, shift, ctrl;
-    xkb_layout_index_t base_group = 0;
-    xkb_layout_index_t latched_group = 0;
-    xkb_layout_index_t locked_group = 0;
+   let caps = fromJust $ keymapModIdx km modname_caps
+   let shift = fromJust $ keymapModIdx km modname_shift
+   let ctrl = fromJust $ keymapModIdx km modname_ctrl
 
-    assert(state);
+   updateKeymapState st keycode_capslock keyDown
+   updateKeymapState st keycode_capslock keyUp
 
-    caps = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CAPS);
-    assert(caps != XKB_MOD_INVALID);
-    shift = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
-    assert(shift != XKB_MOD_INVALID);
-    ctrl = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_CTRL);
-    assert(ctrl != XKB_MOD_INVALID);
+   baseMods <- stateSerializeMods st stateModDepressed
+   latchedMods <- stateSerializeMods st stateModLatched
+   lockedMods <- stateSerializeMods st stateModLocked
+   effectiveMods <- stateSerializeMods st stateModEffective
 
-    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_DOWN);
-    xkb_state_update_key(state, KEY_CAPSLOCK + EVDEV_OFFSET, XKB_KEY_UP);
-    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
-    assert(base_mods == 0);
-    latched_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED);
-    assert(latched_mods == 0);
-    locked_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED);
-    assert(locked_mods == (1 << caps));
-    effective_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
-    assert(effective_mods == locked_mods);
+   mapM print [baseMods,latchedMods,lockedMods,effectiveMods]
+   assert (baseMods == 0) "baseMods invalid"
+   assert (latchedMods == 0) "latchedMods invalid"
+   assert (lockedMods == (2^(unCModIndex caps))) "lockedMods invalid"
+   assert (effectiveMods == lockedMods) "effectiveMods invalid"
 
-    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
-    base_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_DEPRESSED);
-    assert(base_mods == (1 << shift));
-    latched_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_LATCHED);
-    assert(latched_mods == 0);
-    locked_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_LOCKED);
-    assert(locked_mods == (1 << caps));
-    effective_mods = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
-    assert(effective_mods == (base_mods | locked_mods));
+   updateKeymapState st keycode_leftshift keyDown
 
-    base_mods |= (1 << ctrl);
-    xkb_state_update_mask(state, base_mods, latched_mods, locked_mods,
-                          base_group, latched_group, locked_group);
+   baseMods <- stateSerializeMods st stateModDepressed
+   latchedMods <- stateSerializeMods st stateModLatched
+   lockedMods <- stateSerializeMods st stateModLocked
+   effectiveMods <- stateSerializeMods st stateModEffective
 
-    assert(xkb_state_mod_index_is_active(state, ctrl, XKB_STATE_MODS_DEPRESSED));
-    assert(xkb_state_mod_index_is_active(state, ctrl, XKB_STATE_MODS_EFFECTIVE));
+   print $ unCModIndex shift
+   mapM print [baseMods,latchedMods,lockedMods,effectiveMods]
+   assert (baseMods == (2^(unCModIndex shift))) "baseMods invalid"
+   assert (latchedMods == 0) "latchedMods invalid"
+   assert (lockedMods == (2^(unCModIndex caps))) "lockedMods invalid"
+   assert (effectiveMods == (2^(unCModIndex shift)) + (2^(unCModIndex caps))) "effectiveMods invalid"
 
-    xkb_state_unref(state);
-}
+   let baseModsWithCtrl = baseMods + 2^(unCModIndex ctrl)
+   let layout0 = CLayoutIndex 0
+   updateKeymapStateMask st (baseModsWithCtrl, latchedMods, lockedMods) (layout0, layout0, layout0)
 
-static void
-test_repeat(struct xkb_keymap *keymap)
-{
-    assert(!xkb_keymap_key_repeats(keymap, KEY_LEFTSHIFT + 8));
-    assert(xkb_keymap_key_repeats(keymap, KEY_A + 8));
-    assert(xkb_keymap_key_repeats(keymap, KEY_8 + 8));
-    assert(xkb_keymap_key_repeats(keymap, KEY_DOWN + 8));
-    assert(xkb_keymap_key_repeats(keymap, KEY_KBDILLUMDOWN + 8));
-}
+   blergh $ stateModIndexIsActive st ctrl stateModDepressed
+   blergh $ stateModIndexIsActive st ctrl stateModEffective
 
-static void
-test_consume(struct xkb_keymap *keymap)
-{
-    struct xkb_state *state = xkb_state_new(keymap);
-    xkb_mod_index_t alt, shift;
-    xkb_mod_mask_t mask;
+testRepeat :: Keymap -> IO ()
+testRepeat km = do
+   assert (not $ keymapKeyRepeats km keycode_leftshift) "shift key repeat error"
+   assert (keymapKeyRepeats km keycode_a) "a key repeat error"
+   assert (keymapKeyRepeats km keycode_8) "8 key repeat error"
+   assert (keymapKeyRepeats km keycode_down) "down key repeat error"
+   assert (keymapKeyRepeats km keycode_kbdillumdown) "kbdillumdown key repeat error"
 
-    assert(state);
+testConsume :: Keymap -> IO ()
+testConsume km = do
+   st <- newKeymapState km
 
-    alt = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_ALT);
-    assert(alt != XKB_MOD_INVALID);
-    shift = xkb_keymap_mod_get_index(keymap, XKB_MOD_NAME_SHIFT);
-    assert(shift != XKB_MOD_INVALID);
+   let alt = fromJust $ keymapModIdx km modname_alt
+   let shift = fromJust $ keymapModIdx km modname_shift
 
-    xkb_state_update_key(state, KEY_LEFTALT + EVDEV_OFFSET, XKB_KEY_DOWN);
-    xkb_state_update_key(state, KEY_LEFTSHIFT + EVDEV_OFFSET, XKB_KEY_DOWN);
-    xkb_state_update_key(state, KEY_EQUAL + EVDEV_OFFSET, XKB_KEY_DOWN);
+   updateKeymapState st keycode_leftalt keyDown
+   updateKeymapState st keycode_leftshift keyDown
+   updateKeymapState st keycode_equal keyDown
 
-    fprintf(stderr, "dumping state for Alt-Shift-+\n");
-    print_state(state);
+   mask <- stateSerializeMods st stateModEffective
+   assert (mask == 2^(unCModIndex alt) + 2^(unCModIndex shift)) "err"
 
-    mask = xkb_state_serialize_mods(state, XKB_STATE_MODS_EFFECTIVE);
-    assert(mask == ((1 << alt) | (1 << shift)));
-    mask = xkb_state_mod_mask_remove_consumed(state, KEY_EQUAL + EVDEV_OFFSET,
-                                              mask);
-    assert(mask == (1 << alt));
+   newMask <- stateRemoveConsumed st keycode_equal mask
+   assert (newMask == 2^(unCModIndex alt)) $
+               "consumed error: mask "++(show mask)
+               ++", newMask "++(show newMask)
+               ++", expected "++(show $ 2^(unCModIndex alt))
 
-    xkb_state_unref(state);
-}
-
+{- UNSUPPORTED AT THIS STAGE
 static void
 key_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
 {
@@ -216,7 +193,7 @@ main = do
          (Just "grp:menu_toggle"))
 
    testUpdateKey km
-{-   testSerialisation km
+   testSerialisation km
    testRepeat km
    testConsume km
-   testRange km-}
+{-   testRange km-}
