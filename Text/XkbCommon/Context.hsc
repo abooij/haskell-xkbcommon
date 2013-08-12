@@ -20,8 +20,10 @@ import Text.XkbCommon.InternalTypes
 
 
 
--- construct a new Xkb context
--- xkb_context_new can fail if the default include path does not exist
+-- | Construct a new Xkb context from creation preferences.
+--   xkb_context_new can fail if the default include path does not exist.
+--
+--   (@xkb_context_new@)
 newContext :: ContextFlags -> IO (Maybe Context)
 newContext c = do
    k <- c_new_context c
@@ -31,11 +33,13 @@ newContext c = do
          l <- newForeignPtr c_unref_context k
          return $ Just $ toContext l
 
+-- | Remove all 'Keymap' file search paths from a 'Context'. (@xkb_context_include_path_clear@)
 clearIncludePath :: Context -> IO ()
 clearIncludePath ctx = withContext ctx $ \ ptr -> c_clear_includes ptr
 
 -- stateful handling of Xkb context search paths for keymaps
 -- fails if the path does not exist
+-- | Append a search path for 'Keymap' files to a 'Context'. (@xkb_context_include_path_append@)
 appendIncludePath :: Context -> String -> IO (Maybe ())
 appendIncludePath c str = withCString str $
    \ cstr -> withContext c $
@@ -45,16 +49,18 @@ appendIncludePath c str = withCString str $
             then Just ()
             else Nothing
 
+-- | Append the default 'Keymap' search path (whose location depends on libxkbcommon compile-time settings) (@xkb_context_include_path_append_default@)
 appendDefaultIncludePath :: Context -> IO (Maybe ())
 appendDefaultIncludePath ctx = withContext ctx $ \ ptr -> do
    ret <- c_append_default_include ptr -- returns 0 on error
    return (if ret == 0 then Nothing else Just ())
 
+-- | @xkb_context_num_include_paths@
 numIncludePaths :: Context -> IO Int
 numIncludePaths c = withContext c $ liftM fromIntegral . c_num_include_paths_context
 
--- Get a specific include path from the context's include path.
 -- c_show_include_path :: Ptr CContext -> CUInt -> IO CString
+-- | Get a specific include path from the context's include path. (@xkb_context_include_path_get@)
 includePathShow :: Context -> Int -> IO String
 includePathShow ctx idx = withContext ctx $ \ ptr -> c_show_include_path ptr (fromIntegral idx) >>= peekCString
 

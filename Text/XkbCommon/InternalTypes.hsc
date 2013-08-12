@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, EmptyDataDecls, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE CPP, EmptyDataDecls, GeneralizedNewtypeDeriving, TemplateHaskell #-}
 module Text.XkbCommon.InternalTypes
    ( Context, CContext, InternalContext, toContext, fromContext, withContext,
      ContextFlags(..), defaultFlags,
@@ -25,13 +25,14 @@ module Text.XkbCommon.InternalTypes
 import Foreign
 import Foreign.C
 import Foreign.Storable
-import Control.Monad (ap)
+import Control.Monad (ap, liftM)
 import qualified Foreign.Storable.Newtype as Store
 import Data.Flags
+import Data.Flags.TH
 
 #include <xkbcommon/xkbcommon.h>
 
--- Context is the exposed datatype of an xkbcommon context
+-- | @Context@ is the exposed datatype of an xkbcommon context (@struct xkb_context*@)
 data Context = Context InternalContext
 -- internal datatype and conversion methods...
 data CContext
@@ -43,7 +44,7 @@ fromContext (Context ic) = ic
 withContext :: Context -> (Ptr CContext -> IO a) -> IO a
 withContext = withForeignPtr . fromContext
 
--- Keymap is struct xkb_keymap *
+-- | Keymap represents a compiled keymap object. (@struct xkb_keymap*@)
 data Keymap = Keymap InternalKeymap
 -- internals:
 data CKeymap
@@ -55,9 +56,12 @@ fromKeymap (Keymap km) = km
 withKeymap :: Keymap -> (Ptr CKeymap -> IO a) -> IO a
 withKeymap = withForeignPtr . fromKeymap
 
-{- the RMLVO type specifies preferences for keymap creation
-   haskell equivalent of xkb_rule_names -}
+-- | The RMLVO type specifies preferences for keymap creation
+--   (@struct xkb_rule_names*@)
 data RMLVO = RMLVO {rules, model, layout, variant, options :: Maybe String}
+-- | Specify that no specific keymap is preferred by the program.
+--   Depending on the specified 'ContextFlags' during 'Context' creation,
+--   'RMLVO' specifications may be loaded from environment variables.
 noPrefs = RMLVO { rules = Nothing
                 , model = Nothing
                 , layout = Nothing
@@ -92,7 +96,7 @@ instance Storable RMLVO where
       `ap` (#{peek struct xkb_rule_names, options} p >>= wrapCString)
 
 
--- KeymapState is struct xkb_state *
+-- | @KeymapState@ represents the state of a connected keyboard. (@struct xkb_state*@)
 data KeymapState = KeymapState InternalKeymapState
 -- internals:
 data CKeymapState
@@ -114,6 +118,7 @@ readCString cstr = do
    free cstr
    return str
 
+-- | One graphical symbol (e.g. on-screen). This is the end product of libxkbcommon.
 newtype CKeysym = CKeysym {unCKeysym :: #{type xkb_keysym_t}} deriving (Show, Eq)
 instance Storable CKeysym where
    sizeOf = Store.sizeOf unCKeysym
@@ -130,6 +135,7 @@ safeToKeysym :: CKeysym -> Maybe Keysym
 safeToKeysym (CKeysym 0) = Nothing
 safeToKeysym (CKeysym n) = Just (Keysym (fromIntegral n))
 
+-- | One keyboard key. Events on keys are the input of libxkbcommon.
 newtype CKeycode = CKeycode {unCKeycode :: #{type xkb_keycode_t}} deriving (Show, Eq)
 instance Storable CKeycode where
    sizeOf = Store.sizeOf unCKeycode
@@ -145,18 +151,21 @@ instance Storable CKeycode where
 -- safeToKeycode (CKeycode 0) = Nothing
 -- safeToKeycode (CKeycode n) = Just (Keycode n)
 
-
+-- | @ContextFlags@ carry options for construction of a 'Context'. (@enum xkb_context_flags@)
 newtype ContextFlags = ContextFlags #{type enum xkb_context_flags}
-   deriving (Eq, Flags, BoundedFlags)
-#{enum ContextFlags, ContextFlags
-, contextNoEnvironment = XKB_CONTEXT_NO_ENVIRONMENT_NAMES
-, contextNoDefaultIncs = XKB_CONTEXT_NO_DEFAULT_INCLUDES
-   }
+   deriving (Eq, Flags)
+
+-- tail.init because the first item is the type declaration (which we can already find above) and the last is the Show instance (which we don't want/need)
+$(liftM (tail.init) $ bitmaskWrapper "ContextFlags" ''#{type enum xkb_context_flags} []
+   [("contextNoEnvironment", #{const XKB_CONTEXT_NO_ENVIRONMENT_NAMES}),
+    ("contextNoDefaultIncs", #{const XKB_CONTEXT_NO_DEFAULT_INCLUDES})])
+-- | Default 'ContextFlags': consider RMLVO prefs from the environment variables, and search for 'Keymap' files in the default paths.
 defaultFlags = noFlags :: ContextFlags
+-- | Pure 'ContextFlags': don't consider env vars or default search paths, which are system-dependent.
 pureFlags = allFlags :: ContextFlags
 
 -- newtype CCompileFlags = CCompileFlags #{type enum xkb_keymap_compile_flags} -- only one option, so disabled
-newtype Direction = Direction #{type enum xkb_key_direction}
+newtype Direction = Direction #{type enum xkb_key_direction} -- ^ In a key event, a key can be moved up ('keyUp') or down ('keyDown').
 #{enum Direction, Direction, keyUp = XKB_KEY_UP, keyDown = XKB_KEY_DOWN}
 -- newtype CKeymapFormat = CKeymapFormat #{type enum xkb_keymap_format} -- only one option, so disabled
 -- newtype CKeysymFlags = CKeysymFlags #{type enum xkb_keysym_flags} -- only one option, so disabled
