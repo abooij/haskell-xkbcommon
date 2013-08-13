@@ -18,7 +18,7 @@ import Text.XkbCommon.InternalTypes
 #include <xkbcommon/xkbcommon.h>
 
 
--- create keymap state from keymap
+-- | Create a new keyboard state object for a keymap. (@xkb_state_new@)
 newKeymapState :: Keymap -> IO KeymapState
 newKeymapState km = withKeymap km $
       \ ptr -> do
@@ -26,19 +26,23 @@ newKeymapState km = withKeymap km $
          l <- newForeignPtr c_unref_keymap_state k
          return $ toKeymapState l
 
+-- | Update the keyboard state to reflect a given key being pressed or released. (@xkb_state_update_key@)
 updateKeymapState :: KeymapState -> CKeycode -> Direction -> IO StateComponent
 updateKeymapState st key dir = withKeymapState st $
       \ ptr -> c_update_key_state ptr key dir
 
+-- | Get the single keysym obtained from pressing a particular key in a given keyboard state.
+--   (@xkb_state_key_get_one_sym@)
 getOneKeySym :: KeymapState -> CKeycode -> IO (Maybe Keysym)
 getOneKeySym st key = withKeymapState st $
       \ ptr -> do
          ks <- c_get_one_key_sym ptr key
          return $ safeToKeysym ks
 
--- TODO TEST TEST TEST I HAVE NO IDEA IF THIS WORKS!!!
--- Get the keysyms obtained from pressing a particular key in a given keyboard state.
--- c_state_get_syms :: Ptr CKeymapState -> CKeycode -> Ptr (Ptr CKeysym) -> IO CInt
+-- | Get the keysyms obtained from pressing a particular key in a given keyboard state.
+--   This function is useful because some keycode sequences produce multiple keysyms.
+--
+--   (@xkb_state_key_get_syms@)
 getStateSyms :: KeymapState -> CKeycode -> IO [Keysym]
 getStateSyms st key = withKeymapState st $ \ ptr -> do
    init_ptr <- newArray [] :: IO (Ptr CKeysym)
@@ -56,14 +60,13 @@ getStateSyms st key = withKeymapState st $ \ ptr -> do
 -- Get the effective shift level for a key in a given keyboard state and layout.
 -- c_key_get_level :: Ptr CKeymapState -> CKeycode -> CLayoutIndex -> IO CLevelIndex
 
--- Update a keyboard state from a set of explicit masks.
--- c_update_state_mask :: Ptr CKeymapState -> CModMask -> CModMask -> CModMask -> CLayoutIndex -> CLayoutIndex -> CLayoutIndex -> IO StateComponent
+-- | Update a keyboard state from a set of explicit masks. (@xkb_state_update_mask@)
 updateKeymapStateMask :: KeymapState -> (CModMask, CModMask, CModMask) -> (CLayoutIndex, CLayoutIndex, CLayoutIndex) -> IO StateComponent
 updateKeymapStateMask st (mask1, mask2, mask3) (idx1, idx2, idx3) = withKeymapState st $ \ ptr ->
    c_update_state_mask ptr mask1 mask2 mask3 idx1 idx2 idx3
 
--- The counterpart to xkb_state_update_mask for modifiers, to be used on the server side of serialization.
--- c_serialize_state_mods :: Ptr CKeymapState -> StateComponent -> IO CModMask
+-- | The counterpart to xkb_state_update_mask for modifiers, to be used on the server side of
+--   serialization. (@xkb_state_serialize_mods@)
 stateSerializeMods :: KeymapState -> StateComponent -> IO CModMask
 stateSerializeMods st comp = withKeymapState st $ \ ptr ->
    c_serialize_state_mods ptr comp
@@ -71,16 +74,16 @@ stateSerializeMods st comp = withKeymapState st $ \ ptr ->
 -- The counterpart to xkb_state_update_mask for layouts, to be used on the server side of serialization.
 -- c_serialize_state :: Ptr CKeymapState -> StateComponent -> IO CLayoutIndex
 
--- Test whether a modifier is active in a given keyboard state by name.
--- c_state_mod_name_is_active :: Ptr CKeymapState -> CString -> StateComponent -> IO Int
+-- | Test whether a modifier is active in a given keyboard state by name.
+--   (@xkb_state_mod_name_is_active@)
 stateModNameIsActive :: KeymapState -> String -> StateComponent -> IO Bool
 stateModNameIsActive ks name comp = withKeymapState ks $ \ ptr ->
    withCString name $ \ cstr -> do
       out <- c_state_mod_name_is_active ptr cstr comp
       return $ out /= 0
 
--- Test whether a modifier is active in a given keyboard state by index.
--- c_state_mod_idx_is_active :: Ptr CKeymapState -> CModIndex -> StateComponent -> IO CInt
+-- | Test whether a modifier is active in a given keyboard state by index.
+--   (@xkb_state_mod_index_is_active@)
 stateModIndexIsActive :: KeymapState -> CModIndex -> StateComponent -> IO Bool
 stateModIndexIsActive ks idx comp = withKeymapState ks $ \ ptr -> do
       out <- c_state_mod_idx_is_active ptr idx comp
@@ -89,8 +92,8 @@ stateModIndexIsActive ks idx comp = withKeymapState ks $ \ ptr -> do
 -- Test whether a modifier is consumed by keyboard state translation for a key.
 -- c_modifier_is_consumed :: Ptr CKeymapState -> CKeycode -> CModIndex -> IO CInt
 
--- Remove consumed modifiers from a modifier mask for a key.
--- c_remove_consumed_modifiers :: Ptr CKeymapState -> CKeycode -> CModMask -> IO CModMask
+-- | Remove consumed modifiers from a modifier mask for a key.
+--   (@xkb_state_mod_mask_remove_consumed@)
 stateRemoveConsumed :: KeymapState -> CKeycode -> CModMask -> IO CModMask
 stateRemoveConsumed st kc mask = withKeymapState st $ \ ptr ->
    c_remove_consumed_modifiers ptr kc mask
@@ -101,8 +104,8 @@ stateRemoveConsumed st kc mask = withKeymapState st $ \ ptr ->
 -- Test whether a layout is active in a given keyboard state by index.
 -- c_layout_index_is_active :: Ptr CKeymapState -> CLayoutIndex -> StateComponent -> IO CInt
 
--- Test whether a LED is active in a given keyboard state by name.
--- c_led_name_is_active :: Ptr CKeymapState -> CString -> IO CInt
+-- | Test whether a LED is active in a given keyboard state by name.
+--   (@xkb_state_led_name_is_active@)
 stateLedNameIsActive :: KeymapState -> String -> IO Bool
 stateLedNameIsActive ks name = withKeymapState ks $ \ ptr ->
    withCString name $ \ cstr -> do

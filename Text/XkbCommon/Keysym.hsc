@@ -17,18 +17,20 @@ import Text.XkbCommon.InternalTypes
 
 #include <xkbcommon/xkbcommon.h>
 
--- keysym related
 
+-- | Get a keysym from its name (case sensitive).
+--   (@xkb_keysym_from_name@)
 keysymFromName :: String -> Maybe Keysym
 keysymFromName str = S.unsafePerformIO $ withCString str $ \ cstr ->
    liftM safeToKeysym $ c_keysym_from_name cstr 0 -- 0 means search case sensitive. alternative is #{const XKB_KEYSYM_CASE_INSENSITIVE}
 
--- search case for string case insensitively
+-- | Get a keysym from its name (case insensitive).
+--   (@xkb_keysym_from_name@)
 keysymFromCaselessName :: String -> Maybe Keysym
 keysymFromCaselessName str = S.unsafePerformIO $ withCString str $ \ cstr ->
    liftM safeToKeysym $ c_keysym_from_name cstr #{const XKB_KEYSYM_CASE_INSENSITIVE}
 
--- get string representation of a keysym
+-- | Get the ASCII name of a keysym. (@xkb_keysym_get_name@)
 keysymName :: Keysym -> String
 keysymName ks = S.unsafePerformIO $ do
    -- build 64-byte buffer and pass
@@ -37,6 +39,8 @@ keysymName ks = S.unsafePerformIO $ do
       len <- c_keysym_name (fromKeysym ks) cstr (fromIntegral buflen)
       return =<< peekCString cstr
 
+-- | Get the on-screen representation of a keysym.
+--   (uses @xkb_keysym_to_utf8@, but always encodes to haskell String)
 keysymUtf8 :: Keysym -> String
 keysymUtf8 ks = S.unsafePerformIO $ do
    let buflen = 64

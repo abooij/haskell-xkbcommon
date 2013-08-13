@@ -18,8 +18,10 @@ import Text.XkbCommon.InternalTypes
 #include <xkbcommon/xkbcommon.h>
 
 
--- create keymap from optional preference of Rules+Model+Layouts+Variants+Options
--- immutable but creation can fail. IO because it loads from disk.
+-- | Create keymap from optional preference of Rules+Model+Layouts+Variants+Options
+--   'Keymap's are immutable but creation can fail. IO because it loads from disk.
+--
+--   (@xkb_keymap_new_from_names@)
 newKeymapFromNames :: Context -> RMLVO -> IO (Maybe Keymap)
 newKeymapFromNames ctx rmlvo = withContext ctx $ \ ptr -> do
    crmlvo <- new rmlvo
@@ -27,43 +29,51 @@ newKeymapFromNames ctx rmlvo = withContext ctx $ \ ptr -> do
    l <- newForeignPtr c_unref_keymap k
    return (if k == nullPtr then Nothing else Just $ toKeymap l)
 
--- create keymap from string buffer instead of loading from disk
--- immutable but creation can fail. not IO because it just parses a string.
--- NOTE this can actually be an IO operation when compilation fails!
+-- | Create keymap from string buffer instead of loading from disk
+--   Immutable but creation can fail. not IO because it just parses a string.
+--
+--   haskell-xkbcommon has no equivalent for xkb_keymap_new_from_file: just load it from disk
+--   manually.
+--
+--   NOTE this can actually be an IO operation when compilation fails! (error output to stdout)
+--
+--   (@xkb_keymap_new_from_string@)
 newKeymapFromString :: Context -> String -> Maybe Keymap
 newKeymapFromString ctx buf = S.unsafePerformIO $ withCString buf $ \ cstr -> withContext ctx $ \ ptr -> do
    k <- c_keymap_from_string ptr cstr #{const XKB_KEYMAP_FORMAT_TEXT_V1} #{const XKB_MAP_COMPILE_PLACEHOLDER }
    l <- newForeignPtr c_unref_keymap k
    return (if k == nullPtr then Nothing else Just $ toKeymap l)
 
--- convert a keymap to an enormous string buffer
+-- | Convert a keymap to an enormous string buffer. Opposite of 'newKeymapFromString'
+--
+--   (@xkb_keymap_get_as_string@)
 keymapAsString :: Keymap -> String
 keymapAsString km = S.unsafePerformIO $ withKeymap km $ \ ptr ->
    c_keymap_as_string ptr #{const XKB_KEYMAP_FORMAT_TEXT_V1} >>= peekCString
 
--- Get the number of layouts in the keymap.
+-- | Get the number of layouts in the keymap. (@xkb_keymap_num_layouts@)
 keymapNumLayouts :: Keymap -> CLayoutIndex
 keymapNumLayouts km = S.unsafePerformIO $ withKeymap km c_keymap_num_layouts
 
--- Get the number of layouts for a specific key.
--- c_keymap_num_layouts_key :: Ptr CKeymap -> CKeycode -> IO CLayoutIndex
+-- | Get the number of layouts for a specific key. (@xkb_keymap_num_layouts_for_key@)
 keymapKeyNumLayouts :: Keymap -> CKeycode -> CLayoutIndex
 keymapKeyNumLayouts km key = S.unsafePerformIO $ withKeymap km $ \ ptr -> c_keymap_num_layouts_key ptr key
 
+-- | Get the name of a layout by index. (@xkb_keymap_layout_get_name@)
 keymapLayoutName :: Keymap -> CLayoutIndex -> String
 keymapLayoutName km idx = S.unsafePerformIO $ withKeymap km $
       \ ptr -> c_keymap_layout_name ptr idx >>= peekCString
 
--- Get the number of modifiers in the keymap.
+-- | Get the number of modifiers in the keymap. (@xkb_keymap_num_mods@)
 keymapNumMods :: Keymap -> CModIndex
 keymapNumMods km = S.unsafePerformIO $ withKeymap km c_keymap_num_mods
 
--- Get the name of a modifier by index.
+-- | Get the name of a modifier by index. (@xkb_keymap_mod_get_name@)
 keymapModName :: Keymap -> CModIndex -> String
 keymapModName km idx = S.unsafePerformIO $ withKeymap km $
    \ ptr -> c_keymap_mod_name ptr idx >>= peekCString
 
--- Get the index of a modifier by name.
+-- | Get the index of a modifier by name. (@xkb_keymap_mod_get_index@)
 keymapModIdx :: Keymap -> String -> Maybe CModIndex
 keymapModIdx km name = S.unsafePerformIO $ withKeymap km $
    \ ptr -> withCString name $ \ cstr -> do
@@ -72,7 +82,7 @@ keymapModIdx km name = S.unsafePerformIO $ withKeymap km $
          CModIndex (#{const XKB_MOD_INVALID}) -> return Nothing
          x@(CModIndex n) -> return $ Just x
 
--- Get the number of shift levels for a specific key and layout.
+-- | Get the number of shift levels for a specific key and layout. (@xkb_keymap_num_levels_for_key@)
 keymapNumLevels :: Keymap -> CKeycode -> CLayoutIndex -> CLevelIndex
 keymapNumLevels km kc idx = S.unsafePerformIO $ withKeymap km $ \ ptr -> c_keymap_num_levels ptr kc idx
 
@@ -80,19 +90,16 @@ keymapNumLevels km kc idx = S.unsafePerformIO $ withKeymap km $ \ ptr -> c_keyma
 -- c_keymap_syms_by_level :: Ptr CKeymap -> CKeycode -> CLayoutIndex -> CLevelIndex -> Ptr (Ptr CKeysym) -> IO CInt
 -- TODO
 
--- Get the number of LEDs in the keymap. More...
--- c_keymap_num_leds :: Ptr CKeymap -> IO CLedIndex
+-- | Get the number of LEDs in the keymap. (@xkb_keymap_num_leds@)
 keymapNumLeds :: Keymap -> CLedIndex
 keymapNumLeds km = S.unsafePerformIO $ withKeymap km c_keymap_num_leds
 
--- Get the name of a LED by index.
--- c_keymap_led_name :: Ptr CKeymap -> CLedIndex -> IO CString
+-- | Get the name of a LED by index. (@xkb_keymap_led_get_name@)
 keymapLedName :: Keymap -> CLedIndex -> String
 keymapLedName km id = S.unsafePerformIO . withKeymap km $
    \ ptr -> c_keymap_led_name ptr id >>= peekCString
 
--- Determine whether a key should repeat or not.
--- c_keymap_key_repeats :: Ptr CKeymap -> CKeycode -> IO CInt
+-- | Determine whether a key should repeat or not. (@xkb_keymap_key_repeats@)
 keymapKeyRepeats :: Keymap -> CKeycode -> Bool
 keymapKeyRepeats km kc = S.unsafePerformIO (withKeymap km $ \ ptr -> c_keymap_key_repeats ptr kc) /= 0
 

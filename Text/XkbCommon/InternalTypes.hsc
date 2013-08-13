@@ -14,7 +14,7 @@ module Text.XkbCommon.InternalTypes
 
      CKeysym(..), Keysym(..), toKeysym, fromKeysym, safeToKeysym,
 
-     CLogLevel(..), CKeycode(..), CLayoutIndex(..), CModIndex(..), unCModIndex, CLevelIndex(..),
+     CLogLevel(..), CKeycode(..), CLayoutIndex(..), CModIndex(..), CLevelIndex(..),
      CLedIndex(..), StateComponent(..), CModMask(..),
 
      stateModDepressed, stateModLatched, stateModLocked, stateModEffective,
@@ -118,13 +118,15 @@ readCString cstr = do
    free cstr
    return str
 
--- | One graphical symbol (e.g. on-screen). This is the end product of libxkbcommon.
 newtype CKeysym = CKeysym {unCKeysym :: #{type xkb_keysym_t}} deriving (Show, Eq)
 instance Storable CKeysym where
    sizeOf = Store.sizeOf unCKeysym
    alignment = Store.alignment unCKeysym
    peek = Store.peek CKeysym
    poke = Store.poke unCKeysym
+-- | One graphical symbol (e.g. on-screen). This is the end product of libxkbcommon.
+--
+--   NOTE that @XKB_KEY_NoSymbol@ is represented by a @Nothing@ in haskell-xkbcommon.
 newtype Keysym = Keysym Int deriving (Show, Eq)
 fromKeysym :: Keysym -> CKeysym
 fromKeysym (Keysym k) = CKeysym (fromIntegral k)
@@ -165,18 +167,55 @@ defaultFlags = noFlags :: ContextFlags
 pureFlags = allFlags :: ContextFlags
 
 -- newtype CCompileFlags = CCompileFlags #{type enum xkb_keymap_compile_flags} -- only one option, so disabled
-newtype Direction = Direction #{type enum xkb_key_direction} -- ^ In a key event, a key can be moved up ('keyUp') or down ('keyDown').
+-- | In a key event, a key can be pressed\/moved down ('keyDown') or depressed\/moved up ('keyUp').
+newtype Direction = Direction #{type enum xkb_key_direction}
 #{enum Direction, Direction, keyUp = XKB_KEY_UP, keyDown = XKB_KEY_DOWN}
 -- newtype CKeymapFormat = CKeymapFormat #{type enum xkb_keymap_format} -- only one option, so disabled
 -- newtype CKeysymFlags = CKeysymFlags #{type enum xkb_keysym_flags} -- only one option, so disabled
+
+-- | Index of a keyboard layout.
+--
+--   The layout index is a state component which detemines which keyboard layout is active.
+--   These may be different alphabets, different key arrangements, etc.
+--
+--   Layout indexes are consecutive. The first layout has index 0.
+--
+--   Each layout is not required to have a name, and the names are not guaranteed to be unique
+--   (though they are usually provided and unique).
+--   Therefore, it is not safe to use the name as a unique identifier for a layout.
+--   Layout names are case-sensitive.
+--
+--   Layouts are also called "groups" by XKB.
 newtype CLayoutIndex = CLayoutIndex #{type xkb_layout_index_t}
 newtype CLedIndex = CLedIndex #{type xkb_led_index_t}
+-- | Index of a shift level.
 newtype CLevelIndex = CLevelIndex #{type xkb_level_index_t}
 newtype CLogLevel = CLogLevel #{type enum xkb_log_level}
-newtype CModIndex = CModIndex #{type xkb_mod_index_t}
-unCModIndex :: CModIndex -> #{type xkb_mod_index_t}
-unCModIndex (CModIndex n) = n
+-- | Index of a modifier.
+--
+--   A modifier is a state component which changes the way keys are interpreted.
+--   A keymap defines a set of modifiers, such as Alt, Shift, Num Lock or Meta,
+--   and specifies which keys may activate which modifiers (in a many-to-many relationship,
+--   i.e. a key can activate several modifiers, and a modifier may be activated by several keys.
+--   Different keymaps do this differently).
+--
+--   When retrieving the keysyms for a key, the active modifier set is consulted;
+--   this detemines the correct shift level to use within the currently active layout
+--   (see 'CLevelIndex').
+--
+--   Modifier indexes are consecutive. The first modifier has index 0.
+newtype CModIndex = CModIndex {unCModIndex :: #{type xkb_mod_index_t}} deriving (Show, Eq)
+instance Storable CModIndex where
+   sizeOf = Store.sizeOf unCModIndex
+   alignment = Store.alignment unCModIndex
+   peek = Store.peek CModIndex
+   poke = Store.poke unCModIndex
 newtype CModMask = CModMask #{type xkb_mod_mask_t} deriving(Eq, Num, Show)
+-- | Modifier and layout types for state objects.
+--
+--   In XKB, the DEPRESSED components are also known as \'base\'.
+--
+--   (@xkb_state_component@)
 newtype StateComponent = StateComponent #{type enum xkb_state_component} -- ATTENTION this is a bitmask!
    deriving (Eq, Flags, BoundedFlags)
 #{enum StateComponent, StateComponent
