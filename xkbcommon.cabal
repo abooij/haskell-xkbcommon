@@ -30,9 +30,13 @@ license:             MIT
 license-file:        LICENSE
 author:              Auke Booij
 maintainer:          auke@tulcod.com
-category:            Graphics
+category:            Text
 build-type:          Simple
 cabal-version:       >=1.8
+
+source-repository head
+  type:     git
+  location: https://github.com/tulcod/haskell-xkbcommon.git
 
 library
   exposed-modules:
@@ -50,7 +54,7 @@ library
     Text.XkbCommon.ParseDefines,
     Text.XkbCommon.InternalTypes
   -- other-modules:
-  build-depends:       base ==4.6.*, transformers, storable-record, process, cpphs, template-haskell, text, glib, bytestring, data-flags
+  build-depends:       base ==4.6.*, transformers, storable-record, process, cpphs, template-haskell, text, bytestring, data-flags
   -- build-tools:         c2hs
 
 -- this is actually not a test but a benchmark
