@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.Keysym
-   ( keysymFromName, keysymFromCaselessName, keysymName, keysymUtf8
+   ( keysymFromName, keysymFromNameCaseInsensitive, keysymName, keysymUtf8
    ) where
 
 import Foreign
@@ -26,8 +26,8 @@ keysymFromName str = S.unsafePerformIO $ withCString str $ \ cstr ->
 
 -- | Get a keysym from its name (case insensitive).
 --   (@xkb_keysym_from_name@)
-keysymFromCaselessName :: String -> Maybe Keysym
-keysymFromCaselessName str = S.unsafePerformIO $ withCString str $ \ cstr ->
+keysymFromNameCaseInsensitive :: String -> Maybe Keysym
+keysymFromNameCaseInsensitive str = S.unsafePerformIO $ withCString str $ \ cstr ->
    liftM safeToKeysym $ c_keysym_from_name cstr #{const XKB_KEYSYM_CASE_INSENSITIVE}
 
 -- | Get the ASCII name of a keysym. (@xkb_keysym_get_name@)

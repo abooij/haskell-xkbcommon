@@ -13,8 +13,8 @@ testString str ck = do
       show (keysymFromName str) ++" instead of expected keysym " ++ show ck)
 
 testCaselessString :: String -> Maybe Keysym -> IO ()
-testCaselessString str ck = assert (keysymFromCaselessName str == ck) ("Caseless name " ++ str ++ " returned " ++
-      show (keysymFromCaselessName str) ++" instead of expected keysym " ++ show ck)
+testCaselessString str ck = assert (keysymFromNameCaseInsensitive str == ck) ("Caseless name " ++ str ++ " returned " ++
+      show (keysymFromNameCaseInsensitive str) ++" instead of expected keysym " ++ show ck)
 
 testKeysym :: Keysym -> String -> IO ()
 testKeysym ks str = assert (keysymName ks == str) ("Keysym name " ++ keysymName ks ++
