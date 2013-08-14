@@ -77,17 +77,17 @@ stateSerializeMods st comp = withKeyboardState st $ \ ptr ->
 -- | Test whether a modifier is active in a given keyboard state by name.
 --   (@xkb_state_mod_name_is_active@)
 stateModNameIsActive :: KeyboardState -> String -> StateComponent -> IO Bool
-stateModNameIsActive ks name comp = withKeyboardState ks $ \ ptr ->
+stateModNameIsActive st name comp = withKeyboardState st $ \ ptr ->
    withCString name $ \ cstr -> do
       out <- c_state_mod_name_is_active ptr cstr comp
-      return $ out /= 0
+      return $ out > 0
 
 -- | Test whether a modifier is active in a given keyboard state by index.
 --   (@xkb_state_mod_index_is_active@)
 stateModIndexIsActive :: KeyboardState -> CModIndex -> StateComponent -> IO Bool
-stateModIndexIsActive ks idx comp = withKeyboardState ks $ \ ptr -> do
-      out <- c_state_mod_idx_is_active ptr idx comp
-      return $ out /= 0
+stateModIndexIsActive st idx comp = withKeyboardState st $ \ ptr -> do
+      out <- c_state_mod_index_is_active ptr idx comp
+      return $ out > 0
 
 -- Test whether a modifier is consumed by keyboard state translation for a key.
 -- c_modifier_is_consumed :: Ptr CKeyboardState -> CKeycode -> CModIndex -> IO CInt
@@ -107,10 +107,10 @@ stateRemoveConsumed st kc mask = withKeyboardState st $ \ ptr ->
 -- | Test whether a LED is active in a given keyboard state by name.
 --   (@xkb_state_led_name_is_active@)
 stateLedNameIsActive :: KeyboardState -> String -> IO Bool
-stateLedNameIsActive ks name = withKeyboardState ks $ \ ptr ->
+stateLedNameIsActive st name = withKeyboardState st $ \ ptr ->
    withCString name $ \ cstr -> do
       out <- c_led_name_is_active ptr cstr
-      return $ out /= 0
+      return $ out > 0
 
 -- Test whether a LED is active in a given keyboard state by index.
 -- c_led_index_is_active :: Ptr CKeyboardState -> CLedIndex -> IO CInt
@@ -125,17 +125,11 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_new"
 foreign import ccall unsafe "xkbcommon/xkbcommon.h &xkb_state_unref"
    c_unref_keyboard_state :: FinalizerPtr CKeyboardState
 
--- Below functions are not marshalled properly yet!!!
-
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_update_key"
    c_update_key_state :: Ptr CKeyboardState -> CKeycode -> Direction -> IO StateComponent
 
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_key_get_one_sym"
    c_get_one_key_sym :: Ptr CKeyboardState -> CKeycode -> IO CKeysym
-
-
-
--- The below functions aren't bound yet.
 
 -- int    xkb_state::xkb_state_key_get_syms (struct xkb_state *state, xkb_keycode_t key, const xkb_keysym_t **syms_out)
 --     Get the keysyms obtained from pressing a particular key in a given keyboard state.
@@ -172,7 +166,7 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_serialize_layout"
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_mod_name_is_active"
    c_state_mod_name_is_active :: Ptr CKeyboardState -> CString -> StateComponent -> IO Int
 
--- cannot be ccalled due to va_list
+-- cannot be ccalled due to va_list. libxkbcommon devs say they aren't that useful anyway.
 -- int    xkb_state::xkb_state_mod_names_are_active (struct xkb_state *state, enum xkb_state_component type, enum xkb_state_match match,...)
 --     Test whether a set of modifiers are active in a given keyboard state by name.
 -- foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_mod_names_are_active"
@@ -180,7 +174,7 @@ foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_mod_name_is_active"
 -- int    xkb_state::xkb_state_mod_index_is_active (struct xkb_state *state, xkb_mod_index_t idx, enum xkb_state_component type)
 --     Test whether a modifier is active in a given keyboard state by index.
 foreign import ccall unsafe "xkbcommon/xkbcommon.h xkb_state_mod_index_is_active"
-   c_state_mod_idx_is_active :: Ptr CKeyboardState -> CModIndex -> StateComponent -> IO CInt
+   c_state_mod_index_is_active :: Ptr CKeyboardState -> CModIndex -> StateComponent -> IO CInt
 
 -- cannot be ccalled due to va_list
 -- int    xkb_state::xkb_state_mod_indices_are_active (struct xkb_state *state, enum xkb_state_component type, enum xkb_state_match match,...)
