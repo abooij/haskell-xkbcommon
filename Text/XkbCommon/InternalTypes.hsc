@@ -6,7 +6,7 @@ module Text.XkbCommon.InternalTypes
 
      Keymap, CKeymap, InternalKeymap, toKeymap, fromKeymap, withKeymap, RMLVO(..), noPrefs,
 
-     KeymapState, CKeymapState, toKeymapState, fromKeymapState, withKeymapState,
+     KeyboardState, CKeyboardState, toKeyboardState, fromKeyboardState, withKeyboardState,
 
      readCString,
 
@@ -96,17 +96,17 @@ instance Storable RMLVO where
       `ap` (#{peek struct xkb_rule_names, options} p >>= wrapCString)
 
 
--- | @KeymapState@ represents the state of a connected keyboard. (@struct xkb_state*@)
-data KeymapState = KeymapState InternalKeymapState
+-- | @KeyboardState@ represents the state of a connected keyboard. (@struct xkb_state*@)
+data KeyboardState = KeyboardState InternalKeyboardState
 -- internals:
-data CKeymapState
-type InternalKeymapState = ForeignPtr CKeymapState
-toKeymapState :: InternalKeymapState -> KeymapState
-toKeymapState = KeymapState
-fromKeymapState :: KeymapState -> InternalKeymapState
-fromKeymapState (KeymapState st) = st
-withKeymapState :: KeymapState -> (Ptr CKeymapState -> IO a) -> IO a
-withKeymapState = withForeignPtr . fromKeymapState
+data CKeyboardState
+type InternalKeyboardState = ForeignPtr CKeyboardState
+toKeyboardState :: InternalKeyboardState -> KeyboardState
+toKeyboardState = KeyboardState
+fromKeyboardState :: KeyboardState -> InternalKeyboardState
+fromKeyboardState (KeyboardState st) = st
+withKeyboardState :: KeyboardState -> (Ptr CKeyboardState -> IO a) -> IO a
+withKeyboardState = withForeignPtr . fromKeyboardState
 
 
 -- useful functions

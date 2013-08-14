@@ -21,13 +21,13 @@ data KeyDirections = Down | Up | Both | Repeat deriving (Show, Eq)
 
 testKeySeq :: Keymap -> [(CKeycode, KeyDirections, Keysym)] -> IO [()]
 testKeySeq km tests = do
-   st <- newKeymapState km
+   st <- newKeyboardState km
    return =<< mapM (testOne st) (zip tests [1..]) where
       testOne st ((kc, dir, ks),n) = do
          syms <- getStateSyms st kc
 
-         when (dir == Down || dir == Both) $ void (updateKeymapState st kc keyDown)
-         when (dir == Up || dir == Both) $ void (updateKeymapState st kc keyUp)
+         when (dir == Down || dir == Both) $ void (updateKeyboardState st kc keyDown)
+         when (dir == Up || dir == Both) $ void (updateKeyboardState st kc keyUp)
 
          -- in this test, we always get exactly one keysym
          assert (length syms == 1) "did not get right amount of keysyms"
