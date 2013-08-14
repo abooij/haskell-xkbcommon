@@ -171,7 +171,7 @@ defaultFlags = noFlags :: ContextFlags
 pureFlags = contextNoEnvironment .+. contextNoDefaultIncludes
 
 -- newtype CCompileFlags = CCompileFlags #{type enum xkb_keymap_compile_flags} -- only one option, so disabled
--- | In a key event, a key can be pressed\/moved down ('keyDown') or depressed\/moved up ('keyUp').
+-- | In a key event, a key can be pressed\/moved down ('keyDown') or released\/moved up ('keyUp').
 newtype Direction = Direction #{type enum xkb_key_direction}
 #{enum Direction, Direction, keyUp = XKB_KEY_UP, keyDown = XKB_KEY_DOWN}
 -- newtype CKeymapFormat = CKeymapFormat #{type enum xkb_keymap_format} -- only one option, so disabled
