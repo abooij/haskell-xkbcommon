@@ -9,6 +9,7 @@ module Text.XkbCommon.Keymap
      keymapLedName, keymapKeyRepeats
    ) where
 
+import Control.Monad
 import Foreign
 import Foreign.C
 import qualified System.IO.Unsafe as S (unsafePerformIO)
@@ -60,9 +61,12 @@ keymapKeyNumLayouts :: Keymap -> CKeycode -> CLayoutIndex
 keymapKeyNumLayouts km key = S.unsafePerformIO $ withKeymap km $ \ ptr -> c_keymap_num_layouts_key ptr key
 
 -- | Get the name of a layout by index. (@xkb_keymap_layout_get_name@)
-keymapLayoutName :: Keymap -> CLayoutIndex -> String
-keymapLayoutName km idx = S.unsafePerformIO $ withKeymap km $
-      \ ptr -> c_keymap_layout_name ptr idx >>= peekCString
+keymapLayoutName :: Keymap -> CLayoutIndex -> Maybe String
+keymapLayoutName km idx = S.unsafePerformIO $ withKeymap km $ \ ptr -> do
+   name <- c_keymap_layout_name ptr idx
+   if name == nullPtr
+      then return Nothing
+      else liftM Just $ peekCString name
 
 -- | Get the number of modifiers in the keymap. (@xkb_keymap_num_mods@)
 keymapNumMods :: Keymap -> CModIndex
