@@ -2,7 +2,7 @@
 module Text.XkbCommon.InternalTypes
    ( Context, CContext, InternalContext, toContext, fromContext, withContext,
      ContextFlags(..), defaultFlags,
-     pureFlags, contextNoDefaultIncs, contextNoEnvironment,
+     pureFlags, contextNoDefaultIncludes, contextNoEnvironment,
 
      Keymap, CKeymap, InternalKeymap, toKeymap, fromKeymap, withKeymap, RMLVO(..), noPrefs,
 
@@ -164,11 +164,11 @@ newtype ContextFlags = ContextFlags #{type enum xkb_context_flags}
 -- tail.init because the first item is the type declaration (which we can already find above) and the last is the Show instance (which we don't want/need)
 $(liftM (tail.init) $ bitmaskWrapper "ContextFlags" ''#{type enum xkb_context_flags} []
    [("contextNoEnvironment", #{const XKB_CONTEXT_NO_ENVIRONMENT_NAMES}),
-    ("contextNoDefaultIncs", #{const XKB_CONTEXT_NO_DEFAULT_INCLUDES})])
+    ("contextNoDefaultIncludes", #{const XKB_CONTEXT_NO_DEFAULT_INCLUDES})])
 -- | Default 'ContextFlags': consider RMLVO prefs from the environment variables, and search for 'Keymap' files in the default paths.
 defaultFlags = noFlags :: ContextFlags
 -- | Pure 'ContextFlags': don't consider env vars or default search paths, which are system-dependent.
-pureFlags = allFlags :: ContextFlags
+pureFlags = contextNoEnvironment .+. contextNoDefaultIncludes
 
 -- newtype CCompileFlags = CCompileFlags #{type enum xkb_keymap_compile_flags} -- only one option, so disabled
 -- | In a key event, a key can be pressed\/moved down ('keyDown') or depressed\/moved up ('keyUp').

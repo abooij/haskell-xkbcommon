@@ -3,7 +3,7 @@
 module Text.XkbCommon.Context
    ( Context(..),
 
-     ContextFlags, defaultFlags, pureFlags, contextNoDefaultIncs, contextNoEnvironment,
+     ContextFlags, defaultFlags, pureFlags, contextNoDefaultIncludes, contextNoEnvironment,
 
      newContext,
      appendIncludePath, numIncludePaths, clearIncludePath, appendDefaultIncludePath,

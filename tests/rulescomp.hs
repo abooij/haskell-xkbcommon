@@ -24,7 +24,7 @@ setRmlvoEnv rmlvo = do
 
 main = do
    ctx <- getTestContext
-   envCtx <- liftM fromJust $ newContext contextNoDefaultIncs
+   envCtx <- liftM fromJust $ newContext contextNoDefaultIncludes
    appendIncludePath envCtx datadir
    setRmlvoEnv noPrefs
 
