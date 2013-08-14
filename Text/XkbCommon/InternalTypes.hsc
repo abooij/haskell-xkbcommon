@@ -124,9 +124,13 @@ instance Storable CKeysym where
    alignment = Store.alignment unCKeysym
    peek = Store.peek CKeysym
    poke = Store.poke unCKeysym
--- | One graphical symbol (e.g. on-screen). This is the end product of libxkbcommon.
+-- | One graphical symbol (usually on-screen). This is the end product of libxkbcommon.
+--   Some keysyms are not graphical characters, but can also represent e.g. Left or Right arrow
+--   keys. Refer to the libxkbcommon documentation for details.
 --
 --   NOTE that @XKB_KEY_NoSymbol@ is represented by a @Nothing@ in haskell-xkbcommon.
+--
+--   (@xkb_keysym_t@)
 newtype Keysym = Keysym Int deriving (Show, Eq)
 fromKeysym :: Keysym -> CKeysym
 fromKeysym (Keysym k) = CKeysym (fromIntegral k)
