@@ -1,7 +1,7 @@
 module Text.XkbCommon.Types
    ( Direction, keyUp, keyDown,
 
-     CLogLevel, CKeycode(..), CLayoutIndex(..), CModIndex(..), unCModIndex, CLevelIndex(..),
+     CLogLevel, CKeycode(..), CLayoutIndex(..), CModIndex(..), CLevelIndex(..),
      CLedIndex(..), Keysym(..), StateComponent, CModMask(..),
 
      stateModDepressed, stateModLatched, stateModLocked, stateModEffective,
