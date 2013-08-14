@@ -4,7 +4,7 @@ module Text.XkbCommon.Keymap
    ( Keymap, RMLVO(..), noPrefs,
 
      newKeymapFromNames, newKeymapFromString, keymapAsString, keymapNumLayouts,
-     keymapKeyNumLayouts, keymapNumMods, keymapModName, keymapModIdx, keymapNumLevels,
+     keymapKeyNumLayouts, keymapNumMods, keymapModName, keymapModIdx, keymapKeyNumLevels,
      keymapNumLeds,
      keymapLedName, keymapKeyRepeats
    ) where
@@ -87,8 +87,8 @@ keymapModIdx km name = S.unsafePerformIO $ withKeymap km $
          x@(CModIndex n) -> return $ Just x
 
 -- | Get the number of shift levels for a specific key and layout. (@xkb_keymap_num_levels_for_key@)
-keymapNumLevels :: Keymap -> CKeycode -> CLayoutIndex -> CLevelIndex
-keymapNumLevels km kc idx = S.unsafePerformIO $ withKeymap km $ \ ptr -> c_keymap_num_levels ptr kc idx
+keymapKeyNumLevels :: Keymap -> CKeycode -> CLayoutIndex -> CLevelIndex
+keymapKeyNumLevels km kc idx = S.unsafePerformIO $ withKeymap km $ \ ptr -> c_keymap_num_levels ptr kc idx
 
 -- Get the keysyms obtained from pressing a key in a given layout and shift level.
 -- c_keymap_syms_by_level :: Ptr CKeymap -> CKeycode -> CLayoutIndex -> CLevelIndex -> Ptr (Ptr CKeysym) -> IO CInt
