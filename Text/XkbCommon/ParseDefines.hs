@@ -20,18 +20,18 @@ readHeader str = do
 
 genKeysyms :: IO [Dec]
 genKeysyms = do
-   (filename, keysyms_header) <- readHeader "xkbcommon/xkbcommon-keysyms.h"
-   (_, defs) <- macroPassReturningSymTab [] defaultBoolOptions [(newfile filename, keysyms_header)]
+   (headerFilename, keysyms_header) <- readHeader "xkbcommon/xkbcommon-keysyms.h"
+   (_, defs) <- macroPassReturningSymTab [] defaultBoolOptions [(newfile headerFilename, keysyms_header)]
    let exclude_defs = ["XKB_KEY_VoidSymbol", "XKB_KEY_NoSymbol"]
-   let filtered_defs = filter (\ (name, val) -> isPrefixOf "XKB_KEY" name && notElem name exclude_defs) defs
+   let filtered_defs = filter (\ (name, _) -> isPrefixOf "XKB_KEY" name && notElem name exclude_defs) defs
    let parsed_defs = map (drop 8 *** read) filtered_defs
    return $ map (\ (name, val) -> ValD (VarP $ mkName ("keysym_" ++ name)) (NormalB (AppE (VarE $ mkName "toKeysym") (AppE (ConE $ mkName "CKeysym") $ LitE (IntegerL val)))) []) parsed_defs
 
 genKeycodes :: IO [Dec]
 -- genKeycodes = return []
 genKeycodes = do
-   (filename, keysyms_header) <- readHeader "linux/input.h"
-   (_, defs) <- macroPassReturningSymTab [] defaultBoolOptions [(newfile filename, keysyms_header)]
+   (headerFilename, keysyms_header) <- readHeader "linux/input.h"
+   (_, defs) <- macroPassReturningSymTab [] defaultBoolOptions [(newfile headerFilename, keysyms_header)]
    let exclude_defs = []
    let filtered_defs = filter (\ (name, val) -> isPrefixOf "KEY_" name && notElem name exclude_defs && isJust (maybeRead val :: Maybe Int)) defs
    let parsed_defs = map (drop 4 *** read) filtered_defs
@@ -40,8 +40,8 @@ genKeycodes = do
 genModnames :: IO [Dec]
 -- genKeycodes = return []
 genModnames = do
-   (filename, keysyms_header) <- readHeader "xkbcommon/xkbcommon-names.h"
-   (_, defs) <- macroPassReturningSymTab [] defaultBoolOptions [(newfile filename, keysyms_header)]
+   (headerFilename, keysyms_header) <- readHeader "xkbcommon/xkbcommon-names.h"
+   (_, defs) <- macroPassReturningSymTab [] defaultBoolOptions [(newfile headerFilename, keysyms_header)]
    let exclude_defs = []
    let mod_defs = filter (\ (name, val) -> isPrefixOf "XKB_MOD_" name && notElem name exclude_defs && isJust (maybeRead val :: Maybe String)) defs
    let led_defs = filter (\ (name, val) -> isPrefixOf "XKB_LED_" name && notElem name exclude_defs && isJust (maybeRead val :: Maybe String)) defs
