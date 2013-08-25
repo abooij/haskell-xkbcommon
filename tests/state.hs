@@ -4,6 +4,7 @@ import Data.Functor
 
 import Text.XkbCommon
 import Text.XkbCommon.Constants
+import Text.XkbCommon.KeycodeList
 
 import Common
 

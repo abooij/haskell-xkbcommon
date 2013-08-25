@@ -5,6 +5,7 @@ import System.Posix.Env
 
 import Text.XkbCommon
 import Text.XkbCommon.Constants
+import Text.XkbCommon.KeycodeList
 
 import Common
 

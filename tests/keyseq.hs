@@ -3,6 +3,7 @@ import Data.Maybe
 
 import Text.XkbCommon
 import Text.XkbCommon.Constants
+import Text.XkbCommon.KeycodeList
 
 import Common
 
