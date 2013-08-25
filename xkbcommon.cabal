@@ -54,7 +54,7 @@ library
     Text.XkbCommon.ParseDefines,
     Text.XkbCommon.InternalTypes
   -- other-modules:
-  build-depends:       base ==4.6.*, transformers, storable-record, process, cpphs, template-haskell, text, bytestring, data-flags
+  build-depends:       base ==4.6.*, transformers, storable-record, process, cpphs, template-haskell, text, bytestring, data-flags, filepath
   -- build-tools:         c2hs
 
 -- this is actually not a test but a benchmark

@@ -5,7 +5,7 @@ module Text.XkbCommon.Context
 
      ContextFlags, defaultFlags, pureFlags, contextNoDefaultIncludes, contextNoEnvironment,
 
-     newContext,
+     newContext, getIncludePaths, setIncludePaths,
      appendIncludePath, numIncludePaths, clearIncludePath, appendDefaultIncludePath,
      includePathShow,
    ) where
@@ -13,6 +13,8 @@ module Text.XkbCommon.Context
 import Foreign
 import Foreign.C
 import Control.Monad (liftM)
+import Data.Maybe
+import System.FilePath
 
 import Text.XkbCommon.InternalTypes
 
@@ -33,14 +35,45 @@ newContext c = do
          l <- newForeignPtr c_unref_context k
          return $ Just $ toContext l
 
--- | Remove all 'Keymap' file search paths from a 'Context'. (@xkb_context_include_path_clear@)
+-- | Get the current include paths of a 'Context'.
+--   Upon 'Keymap' creation, these directories will be searched for keymap definitions.
+getIncludePaths :: Context -> IO [FilePath]
+getIncludePaths ctx = do
+   numPaths <- numIncludePaths ctx
+   sequence [includePathShow ctx i | i<-[1..numPaths]]
+
+-- | Set a new list of include paths for a 'Context'.
+setIncludePaths :: Context -- ^ Context whose search paths we are changing
+                -> [FilePath] -- ^ New list of search paths
+                -> Bool -- ^ Set to True if you also want to search on the default path
+                -> IO (Maybe ()) -- ^ returns Just () if addition of at least one path succeeded
+setIncludePaths ctx list appendDefault = do
+   clearIncludePath ctx
+   let listMaybeWith = if appendDefault
+                          then (appendDefaultIncludePath ctx:map addPath list)
+                          else map addPath list
+   success <- fmap or $ fmap (fmap isJust) $ sequence listMaybeWith
+   return $ if success
+               then Just ()
+               else Nothing
+       where
+          addPath path = appendIncludePath ctx path
+
+-- | Remove all 'Keymap' file search paths from a 'Context'.
+--
+--   Preferred API is to use 'getIncludePaths' and 'setIncludePaths'
+--
+--   (@xkb_context_include_path_clear@)
 clearIncludePath :: Context -> IO ()
 clearIncludePath ctx = withContext ctx $ \ ptr -> c_clear_includes ptr
 
 -- stateful handling of Xkb context search paths for keymaps
 -- fails if the path does not exist
 -- | Append a search path for 'Keymap' files to a 'Context'. (@xkb_context_include_path_append@)
-appendIncludePath :: Context -> String -> IO (Maybe ())
+--
+--   Preferred API is to use 'getIncludePaths' and 'setIncludePaths'
+--
+appendIncludePath :: Context -> FilePath -> IO (Maybe ())
 appendIncludePath c str = withCString str $
    \ cstr -> withContext c $
       \ ptr -> do
@@ -50,18 +83,27 @@ appendIncludePath c str = withCString str $
             else Nothing
 
 -- | Append the default 'Keymap' search path (whose location depends on libxkbcommon compile-time settings) (@xkb_context_include_path_append_default@)
+--
+--   Preferred API is to use 'getIncludePaths' and 'setIncludePaths'
+--
 appendDefaultIncludePath :: Context -> IO (Maybe ())
 appendDefaultIncludePath ctx = withContext ctx $ \ ptr -> do
    ret <- c_append_default_include ptr -- returns 0 on error
    return (if ret == 0 then Nothing else Just ())
 
--- | @xkb_context_num_include_paths@
+-- | (@xkb_context_num_include_paths@)
+--
+--   Preferred API is to use 'getIncludePaths' and 'setIncludePaths'
+--
 numIncludePaths :: Context -> IO Int
 numIncludePaths c = withContext c $ liftM fromIntegral . c_num_include_paths_context
 
 -- c_show_include_path :: Ptr CContext -> CUInt -> IO CString
 -- | Get a specific include path from the context's include path. (@xkb_context_include_path_get@)
-includePathShow :: Context -> Int -> IO String
+--
+--   Preferred API is to use 'getIncludePaths' and 'setIncludePaths'
+--
+includePathShow :: Context -> Int -> IO FilePath
 includePathShow ctx idx = withContext ctx $ \ ptr -> c_show_include_path ptr (fromIntegral idx) >>= peekCString
 
 
