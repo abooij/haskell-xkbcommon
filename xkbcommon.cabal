@@ -2,12 +2,12 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                xkbcommon
-version:             0
+version:             0.0.0
 synopsis:            Haskell bindings for libxkbcommon
 description:
   Wrapper library for libxkbcommon, which is the new alternative for the X11 XKB.h keyboard input
   API. Specifically, it finds keymap files from disk based on Rule\/Model\/Layout\/Variant\/Option
-  specifications, and compiles them into a 'Keymap'. From this 'Keymap', a 'KeymapState' can be
+  specifications, and compiles them into a 'Keymap'. From this 'Keymap', a 'KeyboardState' can be
   constructed which represents the states of various physical buttons such as the shift/alt/ctrl
   keys, and can give the correct key symbol based on keyboard events. E.g., pressing the @\<h\>@ key
   while @\<shift\>@ is pressed produces the @H@ symbol in the common QWERTY keymaps, but in e.g.
@@ -23,8 +23,8 @@ description:
   in most realistic use cases input data comes from the IO monad anyway, the stateful operations
   are encoded in the IO monad anyway.
   .
-  Note that these bindings load the keysym and keycode constants from the libxkbcommon C header
-  files at compile time using TH.
+  Note that these bindings load the keysym constants from the libxkbcommon C header files at
+  compile time using TH, and similarly keycodes from the Linux header files.
   These should be present for correct compilation.
 license:             MIT
 license-file:        LICENSE
@@ -121,5 +121,3 @@ Test-Suite stringcomp
   main-is: stringcomp.hs
   build-depends : base, xkbcommon
   extra-libraries: xkbcommon
-
-
