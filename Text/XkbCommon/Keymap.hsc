@@ -5,7 +5,7 @@ module Text.XkbCommon.Keymap
 
      newKeymapFromNames, newKeymapFromString, keymapAsString, keymapNumLayouts,
      keymapKeyNumLayouts, keymapNumMods, keymapModName, keymapModIdx, keymapKeyNumLevels,
-     keymapNumLeds,
+     keymapNumLeds, keymapLeds, keymapModifiers,
      keymapLedName, keymapKeyRepeats
    ) where
 
@@ -68,16 +68,30 @@ keymapLayoutName km idx = S.unsafePerformIO $ withKeymap km $ \ ptr -> do
       then return Nothing
       else liftM Just $ peekCString name
 
--- | Get the number of modifiers in the keymap. (@xkb_keymap_num_mods@)
+-- | Get the modifiers of a keymap.
+keymapModifiers :: Keymap -> [String]
+keymapModifiers km = [keymapModName km (CModIndex i) | i <- [0..(fromIntegral $ unCModIndex $ keymapNumMods km)]]
+
+-- | Get the number of modifiers in the keymap.
+--
+--   Preferred API is 'keymapModifiers'.
+--
+--   (@xkb_keymap_num_mods@)
 keymapNumMods :: Keymap -> CModIndex
 keymapNumMods km = S.unsafePerformIO $ withKeymap km c_keymap_num_mods
 
 -- | Get the name of a modifier by index. (@xkb_keymap_mod_get_name@)
+--
+--   Preferred API is 'keymapModifiers'.
+--
 keymapModName :: Keymap -> CModIndex -> String
 keymapModName km idx = S.unsafePerformIO $ withKeymap km $
    \ ptr -> c_keymap_mod_name ptr idx >>= peekCString
 
 -- | Get the index of a modifier by name. (@xkb_keymap_mod_get_index@)
+--
+--   Preferred API is 'keymapModifiers'.
+--
 keymapModIdx :: Keymap -> String -> Maybe CModIndex
 keymapModIdx km name = S.unsafePerformIO $ withKeymap km $
    \ ptr -> withCString name $ \ cstr -> do
@@ -94,11 +108,19 @@ keymapKeyNumLevels km kc idx = S.unsafePerformIO $ withKeymap km $ \ ptr -> c_ke
 -- c_keymap_syms_by_level :: Ptr CKeymap -> CKeycode -> CLayoutIndex -> CLevelIndex -> Ptr (Ptr CKeysym) -> IO CInt
 -- TODO
 
+-- | Get the leds of a keymap.
+keymapLeds :: Keymap -> [String]
+keymapLeds km = [keymapLedName km (CLedIndex i) | i <- [0..(fromIntegral $ unCLedIndex $ keymapNumLeds km)]]
+
 -- | Get the number of LEDs in the keymap. (@xkb_keymap_num_leds@)
+--
+--   Preferred API is 'keymapLeds'
 keymapNumLeds :: Keymap -> CLedIndex
 keymapNumLeds km = S.unsafePerformIO $ withKeymap km c_keymap_num_leds
 
 -- | Get the name of a LED by index. (@xkb_keymap_led_get_name@)
+--
+--   Preferred API is 'keymapLeds'
 keymapLedName :: Keymap -> CLedIndex -> String
 keymapLedName km id = S.unsafePerformIO . withKeymap km $
    \ ptr -> c_keymap_led_name ptr id >>= peekCString

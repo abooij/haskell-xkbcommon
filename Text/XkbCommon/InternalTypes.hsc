@@ -191,7 +191,7 @@ newtype Direction = Direction #{type enum xkb_key_direction}
 --
 --   Layouts are also called "groups" by XKB.
 newtype CLayoutIndex = CLayoutIndex #{type xkb_layout_index_t}
-newtype CLedIndex = CLedIndex #{type xkb_led_index_t}
+newtype CLedIndex = CLedIndex {unCLedIndex :: #{type xkb_led_index_t}} deriving (Show, Eq)
 -- | Index of a shift level.
 newtype CLevelIndex = CLevelIndex #{type xkb_level_index_t}
 newtype CLogLevel = CLogLevel #{type enum xkb_log_level}
