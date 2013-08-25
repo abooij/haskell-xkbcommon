@@ -32,7 +32,7 @@ import Data.Flags.TH
 
 #include <xkbcommon/xkbcommon.h>
 
--- | @Context@ is the exposed datatype of an xkbcommon context (@struct xkb_context*@)
+-- | @Context@ is the exposed datatype of an xkbcommon context (@struct xkb_context@)
 data Context = Context InternalContext
 -- internal datatype and conversion methods...
 data CContext
@@ -44,7 +44,7 @@ fromContext (Context ic) = ic
 withContext :: Context -> (Ptr CContext -> IO a) -> IO a
 withContext = withForeignPtr . fromContext
 
--- | Keymap represents a compiled keymap object. (@struct xkb_keymap*@)
+-- | Keymap represents a compiled keymap object. (@struct xkb_keymap@)
 data Keymap = Keymap InternalKeymap
 -- internals:
 data CKeymap
@@ -57,7 +57,7 @@ withKeymap :: Keymap -> (Ptr CKeymap -> IO a) -> IO a
 withKeymap = withForeignPtr . fromKeymap
 
 -- | The RMLVO type specifies preferences for keymap creation
---   (@struct xkb_rule_names*@)
+--   (@struct xkb_rule_names@)
 data RMLVO = RMLVO {rules, model, layout, variant, options :: Maybe String}
 -- | Specify that no specific keymap is preferred by the program.
 --   Depending on the specified 'ContextFlags' during 'Context' creation,
@@ -96,7 +96,7 @@ instance Storable RMLVO where
       `ap` (#{peek struct xkb_rule_names, options} p >>= wrapCString)
 
 
--- | @KeyboardState@ represents the state of a connected keyboard. (@struct xkb_state*@)
+-- | @KeyboardState@ represents the state of a connected keyboard. (@struct xkb_state@)
 data KeyboardState = KeyboardState InternalKeyboardState
 -- internals:
 data CKeyboardState
