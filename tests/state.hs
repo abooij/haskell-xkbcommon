@@ -16,23 +16,23 @@ testUpdateKey :: Keymap -> IO ()
 testUpdateKey km = do
    st <- newKeyboardState km
 
-   updateKeyboardState st keycode_leftctrl keyDown
+   updateKeyboardStateKey st keycode_leftctrl keyDown
    blergh (stateModNameIsActive st modname_ctrl stateModDepressed)
 
-   updateKeyboardState st keycode_rightalt keyDown
+   updateKeyboardStateKey st keycode_rightalt keyDown
    blergh (stateModNameIsActive st modname_ctrl stateModDepressed)
    blergh (stateModNameIsActive st modname_alt stateModDepressed)
 
-   updateKeyboardState st keycode_leftctrl keyUp
+   updateKeyboardStateKey st keycode_leftctrl keyUp
    blergh (liftM not $ stateModNameIsActive st modname_ctrl stateModDepressed)
    blergh (stateModNameIsActive st modname_alt stateModDepressed)
 
-   updateKeyboardState st keycode_rightalt keyUp
+   updateKeyboardStateKey st keycode_rightalt keyUp
    blergh (liftM not $ stateModNameIsActive st modname_alt stateModDepressed)
 
-   updateKeyboardState st keycode_capslock keyDown
+   updateKeyboardStateKey st keycode_capslock keyDown
    blergh (stateModNameIsActive st modname_caps stateModDepressed)
-   updateKeyboardState st keycode_capslock keyUp
+   updateKeyboardStateKey st keycode_capslock keyUp
    blergh (liftM not $ stateModNameIsActive st modname_caps stateModDepressed)
    blergh (stateModNameIsActive st modname_caps stateModLocked)
    blergh (stateLedNameIsActive st ledname_caps)
@@ -40,8 +40,8 @@ testUpdateKey km = do
    assert (1 == length out) "err"
    assert (head out == keysym_Q) "err"
 
-   updateKeyboardState st keycode_numlock keyDown
-   updateKeyboardState st keycode_numlock keyUp
+   updateKeyboardStateKey st keycode_numlock keyDown
+   updateKeyboardStateKey st keycode_numlock keyUp
    blergh (stateModNameIsActive st modname_caps stateModLocked)
    blergh (stateModNameIsActive st "Mod2" stateModLocked)
    out <- getStateSyms st keycode_kp1
@@ -49,21 +49,21 @@ testUpdateKey km = do
    assert (head out == keysym_KP_1) "err"
    blergh (stateLedNameIsActive st ledname_num)
 
-   updateKeyboardState st keycode_numlock keyDown
-   updateKeyboardState st keycode_numlock keyUp
+   updateKeyboardStateKey st keycode_numlock keyDown
+   updateKeyboardStateKey st keycode_numlock keyUp
 
-   updateKeyboardState st keycode_compose keyDown
-   updateKeyboardState st keycode_compose keyUp
+   updateKeyboardStateKey st keycode_compose keyDown
+   updateKeyboardStateKey st keycode_compose keyUp
 
    blergh (stateLedNameIsActive st "Group 2")
    out <- stateLedNameIsActive st ledname_num
    assert (not out) "err"
 
-   updateKeyboardState st keycode_compose keyDown
-   updateKeyboardState st keycode_compose keyUp
+   updateKeyboardStateKey st keycode_compose keyDown
+   updateKeyboardStateKey st keycode_compose keyUp
 
-   updateKeyboardState st keycode_capslock keyDown
-   updateKeyboardState st keycode_capslock keyUp
+   updateKeyboardStateKey st keycode_capslock keyDown
+   updateKeyboardStateKey st keycode_capslock keyUp
    blergh (liftM not $ stateModNameIsActive st modname_caps stateModEffective)
    blergh (liftM not $ stateLedNameIsActive st ledname_caps)
    out <- getStateSyms st keycode_q
@@ -81,8 +81,8 @@ testUpdateKey km = do
 
    out <- getOneKeySym st keycode_6
    assert (isNothing out) "err"
-   updateKeyboardState st keycode_6 keyDown
-   updateKeyboardState st keycode_6 keyUp
+   updateKeyboardStateKey st keycode_6 keyDown
+   updateKeyboardStateKey st keycode_6 keyUp
 
    out <- getOneKeySym st keycode_5
    assert (out == Just keysym_5) "err"
@@ -96,8 +96,8 @@ testSerialisation km = do
    let shift = fromJust $ keymapModIdx km modname_shift
    let ctrl = fromJust $ keymapModIdx km modname_ctrl
 
-   updateKeyboardState st keycode_capslock keyDown
-   updateKeyboardState st keycode_capslock keyUp
+   updateKeyboardStateKey st keycode_capslock keyDown
+   updateKeyboardStateKey st keycode_capslock keyUp
 
    baseMods <- stateSerializeMods st stateModDepressed
    latchedMods <- stateSerializeMods st stateModLatched
@@ -109,7 +109,7 @@ testSerialisation km = do
    assert (lockedMods == (2^unCModIndex caps)) "lockedMods invalid"
    assert (effectiveMods == lockedMods) "effectiveMods invalid"
 
-   updateKeyboardState st keycode_leftshift keyDown
+   updateKeyboardStateKey st keycode_leftshift keyDown
 
    baseMods <- stateSerializeMods st stateModDepressed
    latchedMods <- stateSerializeMods st stateModLatched
@@ -143,9 +143,9 @@ testConsume km = do
    let alt = fromJust $ keymapModIdx km modname_alt
    let shift = fromJust $ keymapModIdx km modname_shift
 
-   updateKeyboardState st keycode_leftalt keyDown
-   updateKeyboardState st keycode_leftshift keyDown
-   updateKeyboardState st keycode_equal keyDown
+   updateKeyboardStateKey st keycode_leftalt keyDown
+   updateKeyboardStateKey st keycode_leftshift keyDown
+   updateKeyboardStateKey st keycode_equal keyDown
 
    mask <- stateSerializeMods st stateModEffective
    assert (mask == 2^unCModIndex alt + 2^unCModIndex shift) "err"

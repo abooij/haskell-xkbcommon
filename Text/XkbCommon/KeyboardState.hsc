@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP, ForeignFunctionInterface #-}
 
 module Text.XkbCommon.KeyboardState
-   ( KeyboardState, newKeyboardState, updateKeyboardState, updateKeyboardStateMask, getOneKeySym, getStateSyms,
+   ( KeyboardState, newKeyboardState, updateKeyboardStateKey, updateKeyboardStateMask, getOneKeySym, getStateSyms,
      stateRemoveConsumed,
 
      stateModNameIsActive, stateModIndexIsActive, stateLedNameIsActive, stateSerializeMods,
@@ -27,8 +27,8 @@ newKeyboardState km = withKeymap km $
          return $ toKeyboardState l
 
 -- | Update the keyboard state to reflect a given key being pressed or released. (@xkb_state_update_key@)
-updateKeyboardState :: KeyboardState -> CKeycode -> Direction -> IO StateComponent
-updateKeyboardState st key dir = withKeyboardState st $
+updateKeyboardStateKey :: KeyboardState -> CKeycode -> Direction -> IO StateComponent
+updateKeyboardStateKey st key dir = withKeyboardState st $
       \ ptr -> c_update_key_state ptr key dir
 
 -- | Get the single keysym obtained from pressing a particular key in a given keyboard state.

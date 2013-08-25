@@ -26,8 +26,8 @@ testKeySeq km tests = do
       testOne st ((kc, dir, ks),n) = do
          syms <- getStateSyms st kc
 
-         when (dir == Down || dir == Both) $ void (updateKeyboardState st kc keyDown)
-         when (dir == Up || dir == Both) $ void (updateKeyboardState st kc keyUp)
+         when (dir == Down || dir == Both) $ void (updateKeyboardStateKey st kc keyDown)
+         when (dir == Up || dir == Both) $ void (updateKeyboardStateKey st kc keyUp)
 
          -- in this test, we always get exactly one keysym
          assert (length syms == 1) "did not get right amount of keysyms"

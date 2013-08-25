@@ -19,7 +19,7 @@ update i a xs = xs V.// [(i,a)]
 bench :: KeyboardState -> Int -> V.Vector Bool -> IO ()
 bench st n keys = unless (n == 0) $ do
    rand <- getStdRandom (randomR (9,255))
-   updateKeyboardState st (CKeycode $ fromIntegral rand)
+   updateKeyboardStateKey st (CKeycode $ fromIntegral rand)
       (if keys V.! rand then keyUp else keyDown)
    return =<< bench st (n-1) $ Main.update rand (not $ keys V.! rand) keys  -- keys // [(rand,(not $ keys V.! rand))]
 
