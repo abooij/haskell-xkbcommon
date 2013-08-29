@@ -13,6 +13,10 @@ Currently, haskell-xkbcommon is a thin layer on top of libxkbcommon, and this co
 make xkbcommon look like a Haskell library.
 I need to read McAllister "High-level FFI in Haskell" and apply those ideas.
 
+Documentation
+===
+See the test suite for example code.
+
 Authors
 ===
 -	Auke Booij
