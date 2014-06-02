@@ -18,6 +18,7 @@ for file in \
     symbols/shift \
     symbols/pc \
     symbols/ca \
+    symbols/cz \
     symbols/srvr_ctrl \
     symbols/capslock \
     symbols/latin \
@@ -32,9 +33,12 @@ for file in \
     symbols/rupeesign \
     symbols/kpdl \
     symbols/de \
+    symbols/ch \
+    symbols/empty \
     keycodes/xfree86 \
     keycodes/aliases \
     keycodes/evdev \
+    keycodes/empty \
     types/complete \
     types/pc \
     types/basic \
