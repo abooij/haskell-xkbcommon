@@ -56,6 +56,7 @@ library
   -- other-modules:
   build-depends:       base <5, transformers, storable-record, process, cpphs, template-haskell, text, bytestring, data-flags, filepath
   -- build-tools:         c2hs
+  extra-libraries: xkbcommon
 
 -- this is actually not a test but a benchmark
 Benchmark bench-key-proc
@@ -64,7 +65,6 @@ Benchmark bench-key-proc
   other-modules: Common
   main-is: bench-key-proc.hs
   build-depends : base, xkbcommon, random, vector, time
-  extra-libraries: xkbcommon
 
 Test-Suite context
   type: exitcode-stdio-1.0
@@ -72,7 +72,6 @@ Test-Suite context
   other-modules: Common
   main-is: context.hs
   build-depends : base, xkbcommon
-  extra-libraries: xkbcommon
 
 Test-Suite filecomp
   type: exitcode-stdio-1.0
@@ -80,7 +79,6 @@ Test-Suite filecomp
   other-modules: Common
   main-is: filecomp.hs
   build-depends : base, xkbcommon
-  extra-libraries: xkbcommon
 
 Test-Suite keyseq
   type: exitcode-stdio-1.0
@@ -88,7 +86,6 @@ Test-Suite keyseq
   other-modules: Common
   main-is: keyseq.hs
   build-depends : base, xkbcommon
-  extra-libraries: xkbcommon
 
 Test-Suite keysym
   type: exitcode-stdio-1.0
@@ -96,7 +93,6 @@ Test-Suite keysym
   other-modules: Common
   main-is: keysym.hs
   build-depends : base, xkbcommon
-  extra-libraries: xkbcommon
 
 Test-Suite rulescomp
   type: exitcode-stdio-1.0
@@ -104,7 +100,6 @@ Test-Suite rulescomp
   other-modules: Common
   main-is: rulescomp.hs
   build-depends : base, xkbcommon, unix
-  extra-libraries: xkbcommon
 
 Test-Suite state
   type: exitcode-stdio-1.0
@@ -112,7 +107,6 @@ Test-Suite state
   other-modules: Common
   main-is: state.hs
   build-depends : base, xkbcommon
-  extra-libraries: xkbcommon
 
 Test-Suite stringcomp
   type: exitcode-stdio-1.0
@@ -120,4 +114,3 @@ Test-Suite stringcomp
   other-modules: Common
   main-is: stringcomp.hs
   build-depends : base, xkbcommon
-  extra-libraries: xkbcommon
