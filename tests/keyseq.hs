@@ -205,13 +205,29 @@ main = do
       (keycode_leftshift,   Up,    keysym_Caps_Lock),
       (keycode_capslock,    Up,    keysym_ISO_Level3_Shift),
       (keycode_rightalt,    Down,  keysym_ISO_Level5_Shift),
+      -- see 0c8e9e0c in libxkbcommon
+      -- (keycode_5,           Both,  keysym_periodcentered),
+      -- (keycode_e,           Both,  keysym_Up),
+      -- (keycode_space,       Both,  keysym_KP_0),
+      -- (keycode_kp8,         Both,  keysym_KP_Up),
+      (keycode_esc,         Both,  keysym_Escape),
+      (keycode_rightalt,    Up,    keysym_ISO_Level5_Shift),
+      (keycode_v,           Both,    keysym_p)]
+
+   km1a <- liftM fromJust $ newKeymapFromNames ctx (RMLVO
+               (Just "evdev")
+               (Just "")
+               (Just "de")
+               (Just "neo")
+               (Just ""))
+   testKeySeq km1a [
+      (keycode_rightalt,    Down,  keysym_ISO_Level5_Shift),
       (keycode_5,           Both,  keysym_periodcentered),
       (keycode_e,           Both,  keysym_Up),
       (keycode_space,       Both,  keysym_KP_0),
       (keycode_kp8,         Both,  keysym_KP_Up),
       (keycode_esc,         Both,  keysym_Escape),
-      (keycode_rightalt,    Up,    keysym_ISO_Level5_Shift),
-      (keycode_v,           Both,    keysym_p)]
+      (keycode_rightalt,    Up,    keysym_ISO_Level5_Shift)]
 
    km2 <- liftM fromJust $ newKeymapFromNames ctx (RMLVO
                (Just "evdev")
