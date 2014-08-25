@@ -2,7 +2,7 @@
 -- documentation, see http://haskell.org/cabal/users-guide/
 
 name:                xkbcommon
-version:             0.0.0
+version:             0.0.1
 synopsis:            Haskell bindings for libxkbcommon
 description:
   Wrapper library for libxkbcommon, which is the new alternative for the X11 XKB.h keyboard input
