@@ -31,7 +31,7 @@ license-file:        LICENSE
 author:              Auke Booij
 maintainer:          auke@tulcod.com
 category:            Text
-build-type:          Simple
+build-type:          Custom
 cabal-version:       >=1.8
 
 source-repository head
@@ -42,6 +42,7 @@ library
   exposed-modules:
     Text.XkbCommon,
     Text.XkbCommon.KeysymList,
+    Text.XkbCommon.KeysymPatterns,
     Text.XkbCommon.KeycodeList,
     Text.XkbCommon.ModList,
     Text.XkbCommon.Constants,
