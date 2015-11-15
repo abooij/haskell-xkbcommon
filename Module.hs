@@ -2,7 +2,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Copyright   :  (C) 2014 Edward Kmett and Gabríel Arthúr Pétursson
--- License     :  BSD-style (see the file LICENSE)
+-- License     :  BSD-style (see the file LICENSE.gl)
 -- Maintainer  :  Edward Kmett <ekmett@gmail.com>
 -- Stability   :  experimental
 -- Portability :  portable

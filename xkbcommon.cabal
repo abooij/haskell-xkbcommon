@@ -27,7 +27,7 @@ description:
   compile time using TH, and similarly keycodes from the Linux header files.
   These should be present for correct compilation.
 license:             MIT
-license-file:        LICENSE
+license-files:       LICENSE LICENSE.gl
 author:              Auke Booij
 maintainer:          auke@tulcod.com
 category:            Text
