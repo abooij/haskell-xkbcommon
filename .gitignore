@@ -11,3 +11,4 @@ tags
 *~
 .stack-work/
 stack.yaml
+Text/XkbCommon/KeysymPatterns.hs

@@ -10,23 +10,19 @@ import Text.XkbCommon.ParseDefines
 import Module
 import Utils
 
+sourceLoc :: FilePath
+sourceLoc = "./"
+
 main :: IO ()
 main = defaultMainWithHooks simpleUserHooks
-       { buildHook = \p l h f -> generateAPI l >> buildHook simpleUserHooks p l h f
-       , haddockHook = \p l h f -> generateAPI l >> haddockHook simpleUserHooks p l h f
+       { buildHook = \p l h f -> generateSource sourceLoc >> buildHook simpleUserHooks p l h f
+       , haddockHook = \p l h f -> generateSource sourceLoc >> haddockHook simpleUserHooks p l h f
        , sDistHook = \p ml h f -> case ml of
            Nothing -> fail "No local buildinfo available. configure first"
            Just l -> do
-             let editlib lib = lib { libBuildInfo = editBuildInfo (libBuildInfo lib) }
-                 editBuildInfo bi = bi { hsSourceDirs = (buildDir l </> "autogen") : hsSourceDirs bi }
-                 p' = p { library = fmap editlib (library p) }
-             generateAPI l >> sDistHook simpleUserHooks p' ml h f
+             generateSource sourceLoc
+             sDistHook simpleUserHooks p ml h f
        }
-
-generateAPI :: LocalBuildInfo -> IO ()
-generateAPI l = do
-  generateSource (buildDir l </> "autogen")
-  return ()
 
 generateSource :: FilePath -> IO ()
 generateSource fp = do
