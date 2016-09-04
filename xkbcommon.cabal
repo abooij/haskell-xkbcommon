@@ -122,13 +122,13 @@ library
     Text.XkbCommon.ModList,
     Text.XkbCommon.Constants,
     Text.XkbCommon.Types,
+    Text.XkbCommon.InternalTypes,
     Text.XkbCommon.Context,
     Text.XkbCommon.Keymap,
     Text.XkbCommon.KeyboardState,
     Text.XkbCommon.Keysym
   other-modules:
-    Text.XkbCommon.ParseDefines,
-    Text.XkbCommon.InternalTypes
+    Text.XkbCommon.ParseDefines
   -- other-modules:
   build-depends:       base <5, transformers, storable-record, process, cpphs, template-haskell, text, bytestring, data-flags, filepath
   -- build-tools:         c2hs
