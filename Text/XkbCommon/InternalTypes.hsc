@@ -1,4 +1,6 @@
 {-# LANGUAGE CPP, EmptyDataDecls, GeneralizedNewtypeDeriving, TemplateHaskell #-}
+-- | This module is intended to be used only when interoperating with other C libraries.
+-- For other usecases, `Text.XkbCommon.Types` is probably preferable.
 module Text.XkbCommon.InternalTypes
    ( Context, CContext, InternalContext, toContext, fromContext, withContext,
      ContextFlags(..), defaultFlags,
