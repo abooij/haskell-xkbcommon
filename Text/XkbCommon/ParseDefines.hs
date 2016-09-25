@@ -12,11 +12,11 @@ import Control.Arrow
 -- this function calls the c preprocessor to find out what the full path to a header file is.
 readHeader :: String -> IO (String, String)
 readHeader str = do
-   cpp_out <- readProcess "cpp" [] ("#include<" ++ str ++ ">")
-   -- parse output:
-   let headerfile = read $ head $ map ((!! 2) . words) (filter (isInfixOf str) $ lines cpp_out)
-   header <- readFile headerfile
-   return (headerfile, header)
+  cpp_out <- readProcess "cpp" [] ("#include<" ++ str ++ ">")
+  -- parse output:
+  let headerfile = read $ head $ map ((!! 2) . words) (filter (isInfixOf str) $ lines cpp_out)
+  header <- readFile headerfile
+  return (headerfile, header)
 
 getKeysymDefs :: IO [(String,Integer)]
 getKeysymDefs = do
@@ -35,7 +35,8 @@ genKeysyms = do
 genKeycodes :: IO [Dec]
 genKeycodes = do
    (headerFilename, keysyms_header) <- readHeader "linux/input.h"
-   (_, defs) <- macroPassReturningSymTab [] defaultBoolOptions [(newfile headerFilename, keysyms_header)]
+   preprocessed <- cppIfdef headerFilename [] [] defaultBoolOptions keysyms_header
+   (_, defs) <- macroPassReturningSymTab [] defaultBoolOptions preprocessed
    let exclude_defs = []
    let filtered_defs = filter (\ (name, val) -> isPrefixOf "KEY_" name && notElem name exclude_defs && isJust (maybeRead val :: Maybe Int)) defs
    let parsed_defs = map (drop 4 *** read) filtered_defs
