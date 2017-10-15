@@ -1,6 +1,6 @@
 import Control.Arrow
 import Distribution.PackageDescription
-import Distribution.Simple
+import Distribution.Simple hiding (Module)
 import Distribution.Simple.LocalBuildInfo
 import Language.Preprocessor.Cpphs
 import System.FilePath
